@@ -10,27 +10,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/icmta-2026.css">
-<!-- <link rel="icon" href="../assets/images/ICMTA-logo.png" type="image/png"> -->
 
 <style>
-.payment-grid {
+/* Two-Column Responsive Payment Layout */
+.payment-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.15fr 0.85fr;
   gap: 28px;
-  margin-top: 24px;
+  align-items: start;
+  margin-top: 16px;
 }
 .payment-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 28px;
+  padding: 26px 28px;
   box-shadow: 0 4px 18px rgba(30,108,147,0.06);
 }
 .payment-card h3 {
   color: #1e6c93;
   font-size: 18px;
   font-weight: 800;
-  margin-bottom: 14px;
+  margin: 0 0 12px 0;
   padding-bottom: 10px;
   border-bottom: 2px solid #eaf5fb;
 }
@@ -39,21 +40,132 @@
   border-collapse: collapse;
 }
 .info-table td {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px dashed #f1f5f9;
-  font-size: 14px;
+  font-size: 14.5px;
 }
 .info-table td:first-child {
   color: #64748b;
   font-weight: 600;
-  width: 40%;
+  width: 38%;
 }
 .info-table td:last-child {
   color: #0f172a;
   font-weight: 700;
 }
-@media(max-width: 768px) {
-  .payment-grid {
+.amount-highlight-row {
+  border-top: 2px solid #e2e8f0;
+  border-bottom: none !important;
+  background: #f8fafc;
+}
+.amount-highlight-row td {
+  padding: 14px 12px !important;
+}
+
+/* Modal Overlay Base */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-content-box {
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 480px;
+  width: 100%;
+  padding: 32px 28px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+  text-align: center;
+  position: relative;
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalPop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Processing Stepper */
+.proc-steps {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 16px 0;
+  text-align: left;
+}
+.proc-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+}
+.proc-step.done {
+  color: #16a34a;
+  background: #ecfdf5;
+}
+.proc-step.active {
+  color: #1e6c93;
+  background: #eaf5fb;
+  font-weight: 700;
+}
+.proc-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.proc-step.done .proc-icon {
+  background: #16a34a;
+  color: #ffffff;
+}
+.proc-step.active .proc-icon {
+  background: #1e6c93;
+  color: #ffffff;
+  animation: pulseIcon 1.2s infinite ease-in-out;
+}
+.proc-step.waiting .proc-icon {
+  background: #e2e8f0;
+  color: #94a3b8;
+}
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* Radio method pill */
+.method-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.method-pill:hover, .method-pill.active {
+  border-color: #1e6c93;
+  background: #eaf5fb;
+}
+
+@media(max-width: 860px) {
+  .payment-layout-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -103,30 +215,19 @@
         <div class="icm-dd">
           <a href="events.html#upcoming">Upcoming Events</a>
           <a href="events.html#past">Past Events &amp; Archives</a>
-          <a href="../pages/event-form-preview.html">
-  New Event Registration
-</a>
+          <a href="../pages/event-form-preview.html">New Event Registration</a>
         </div>
       </span>
       <span class="icm-navitem">
-        <a href="membership.html" class="nav-item active">Membership <i class="icm-caret">&#9662;</i></a>
+        <a href="membership.html" class="nav-item">Membership <i class="icm-caret">&#9662;</i></a>
         <div class="icm-dd">
-          <a href="membership.html#why">Why Join</a>
-          <a href="membership.html#categories">Categories &amp; Fees</a>
-          <a href="membership.html#apply-section">How to Apply</a>
+          <a href="membership.html">Membership</a>
+          <a href="membership-application.html">Apply for Membership</a>
         </div>
-      </span>
-      <span class="icm-sitesearch" style="position:relative">
-        <button class="icm-ss-btn" aria-label="Search the site" onclick="this.parentNode.classList.toggle('icm-open');var i=this.parentNode.querySelector('input');if(this.parentNode.classList.contains('icm-open')){i.focus();}else{var r=document.getElementById('headerSearchResults');if(r)r.style.display='none';}">&#8981;</button>
-        <form class="icm-ss-form" id="headerSearchForm" action="#" method="get" onsubmit="event.preventDefault()">
-          <input type="search" id="headerSearchInput" name="q" placeholder="Search the site…" aria-label="Search the site" autocomplete="off">
-        </form>
-        <div id="headerSearchResults" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:min(440px,92vw);max-height:480px;overflow-y:auto;background:#ffffff;border:1px solid #d9e6ed;border-top:3px solid #c49b4b;border-radius:6px;box-shadow:0 14px 35px rgba(19,38,48,0.22);z-index:9999;text-align:left;font-family:inherit;"></div>
       </span>
     </nav>
   </div>
 </header>
-
 
 <div class="breadcrumb-bar">
   <div class="breadcrumb-inner">
@@ -138,87 +239,276 @@
   </div>
 </div>
 
-<main class="container">
+<main class="container" style="padding-top:20px;padding-bottom:48px;">
 
-  <div class="section-block">
-    <h2>Membership Fee Schedule</h2>
-    <p>Please refer to your selected membership tier before proceeding with fee remittance:</p>
+  <!-- Page Header -->
+  <div style="margin-bottom:24px;">
+    <h1 style="font-size:26px;font-weight:800;color:#1e6c93;margin:0 0 6px 0;">Membership Payment</h1>
+    <p style="font-size:15px;color:#475569;margin:0;">Complete your payment to process your membership application.</p>
+  </div>
 
-    <div class="payment-grid">
+  <!-- State 1: Loading Details -->
+  <div id="paymentLoadingState" style="display:none;padding:48px 24px;text-align:center;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.04);">
+    <div style="font-size:16px;font-weight:700;color:#1e6c93;">Loading your application &amp; payment details...</div>
+    <p style="font-size:13.5px;color:#64748b;margin:8px 0 0 0;">Verifying records with ICMTA server...</p>
+  </div>
+
+  <!-- State 2: Error / Application Not Found -->
+  <div id="paymentErrorState" style="display:none;padding:28px;background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:10px;margin-bottom:24px;">
+    <h3 style="color:#b91c1c;margin:0 0 6px 0;font-size:17px;" id="errorTitle">Application Not Found</h3>
+    <p style="font-size:14px;color:#7f1d1d;line-height:1.5;margin:0 0 16px 0;" id="errorDescription">
+      We could not find the specified membership application. Please check your Application ID or submit an application first.
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input type="number" id="lookupAppId" placeholder="Enter Application ID (e.g. 2)" style="padding:9px 14px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;width:230px;max-width:100%;">
+      <button type="button" class="btn primary" onclick="loadByManualAppId()" style="padding:9px 20px;font-size:13.5px;">Load Details</button>
+      <a href="membership-application.html" class="btn secondary" style="padding:9px 20px;font-size:13.5px;">Fill Application Form &rarr;</a>
+    </div>
+  </div>
+
+  <!-- State 3: Prompt when visited without application_id in URL -->
+  <div id="paymentNoIdState" style="display:none;padding:32px 28px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.05);margin-bottom:28px;">
+    <h3 style="color:#1e6c93;font-size:18px;font-weight:700;margin:0 0 8px 0;">Have you submitted your membership application?</h3>
+    <p style="font-size:14.5px;color:#475569;margin:0 0 20px 0;line-height:1.5;">
+      If you already have an Application ID, enter it below to load your exact fee details and proceed to online payment:
+    </p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+      <input type="number" id="manualAppIdInput" placeholder="Enter Application ID (e.g. 2)" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;font-size:14.5px;width:240px;max-width:100%;">
+      <button type="button" class="btn primary" onclick="loadFromPromptInput()" style="padding:10px 22px;font-size:14.5px;">Proceed to Pay &rarr;</button>
+      <a href="membership-application.html" class="btn secondary" style="padding:10px 22px;font-size:14.5px;">Apply for Membership</a>
+    </div>
+  </div>
+
+  <!-- State 4: Main Two-Column Payment Layout -->
+  <div id="paymentMainView" style="display:none;">
+    <div class="payment-layout-grid">
       
-      <!-- Fee Details -->
-      <div class="payment-card">
-        <h3>Fee Structure</h3>
-        <table class="info-table">
-          <tr>
-            <td>Life Membership (Faculty)</td>
-            <td>₹ 5,000</td>
-          </tr>
-          <tr>
-            <td>Annual Membership (Faculty)</td>
-            <td>₹ 1,000</td>
-          </tr>
-          <tr>
-            <td>Research Scholar Member</td>
-            <td>₹ 600</td>
-          </tr>
-          <tr>
-            <td>Institutional (University / B-School)</td>
-            <td>₹ 25,000</td>
-          </tr>
-          <tr>
-            <td>Institutional (College / Institute)</td>
-            <td>₹ 12,000</td>
-          </tr>
-        </table>
+      <!-- LEFT COLUMN: Application Details & Online Payment Action -->
+      <div>
+        <div class="payment-card" style="border-top:4px solid #1e6c93;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #eaf5fb;">
+            <div>
+              <h3 style="margin:0;padding:0;border:none;">Application Details</h3>
+              <span style="font-size:12.5px;color:#64748b;">Verified from ICMTA records</span>
+            </div>
+            <span id="paymentStatusBadge" style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#fef3c7;color:#92400e;">Payment Pending</span>
+          </div>
+
+          <table class="info-table" style="margin-bottom:18px;">
+            <tr>
+              <td>Application ID:</td>
+              <td id="summaryAppId" style="font-size:15.5px;color:#1e6c93;font-weight:700;">—</td>
+            </tr>
+            <tr>
+              <td>Applicant Name:</td>
+              <td id="summaryApplicantName">—</td>
+            </tr>
+            <tr>
+              <td>Membership Category:</td>
+              <td id="summaryCategory">—</td>
+            </tr>
+            <tr class="amount-highlight-row">
+              <td style="font-size:15px;color:#0f172a;font-weight:700;">Amount Payable:</td>
+              <td id="summaryAmount" style="font-size:22px;color:#1e6c93;font-weight:800;">—</td>
+            </tr>
+          </table>
+
+          <!-- Unpaid Notice -->
+          <div id="unpaidNotice" style="margin-bottom:18px;padding:14px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-left:4px solid #0284c7;border-radius:6px;color:#0369a1;font-size:13.5px;line-height:1.5;">
+            <strong>Next Step:</strong> Scan the PhonePe QR code on the right using your PhonePe app, complete the transfer, and submit your Transaction ID / UTR below the QR to record your payment.
+          </div>
+
+          <!-- Pending Notice -->
+          <div id="pendingNotice" style="display:none;margin-bottom:18px;padding:16px;background:#fffbeb;border:1px solid #fef3c7;border-left:4px solid #f59e0b;border-radius:6px;color:#92400e;font-size:13.5px;line-height:1.5;">
+            <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">⏳ Payment Submitted — Waiting for Admin Verification</div>
+            <div>Your payment details have been submitted. Once verified by the secretariat, the payment status will update to Paid.</div>
+            <div style="margin-top:8px;font-size:13px;color:#78350f;">
+              Transaction ID / UTR: <strong id="pendingTxnId" style="font-family:monospace;">—</strong>
+            </div>
+            <div style="margin-top:6px;font-size:12px;color:#b45309;">
+              Note: Membership activation requires Secretariat verification and approval.
+            </div>
+          </div>
+
+          <!-- Already Paid Notice -->
+          <div id="alreadyPaidNotice" style="display:none;margin-bottom:18px;padding:16px;background:#ecfdf5;border:1px solid #a7f3d0;border-left:4px solid #10b981;border-radius:6px;color:#065f46;font-size:13.5px;line-height:1.5;">
+            <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">✓ Payment Verified Successfully</div>
+            <div>Your payment has been received and verified on record. Your membership application is under secretariat review for final activation.</div>
+            <div style="margin-top:8px;font-size:13px;">
+              Transaction ID: <strong id="paidTxnId" style="font-family:monospace;">—</strong>
+            </div>
+          </div>
+
+          <!-- Failed Notice -->
+          <div id="failedNotice" style="display:none;margin-bottom:18px;padding:16px;background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:6px;color:#991b1b;font-size:13.5px;line-height:1.5;">
+            <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">⚠️ Payment Verification Failed</div>
+            <div>The previous transaction could not be verified. Please check your transaction details and submit the correct UTR using the form on the right.</div>
+          </div>
+
+          <div style="margin-top:14px;text-align:center;font-size:12.5px;color:#64748b;display:flex;align-items:center;justify-content:center;gap:6px;">
+            <span>🔒</span>
+            <span>Manual UPI / PhonePe Verification Flow &bull; ICMTA Accounts Desk</span>
+          </div>
+        </div>
+
+        <!-- Membership Fee Schedule Reference -->
+        <div class="payment-card" style="margin-top:24px;">
+          <h3>Membership Fee Schedule</h3>
+          <table class="info-table">
+            <tr>
+              <td>Life Membership (Faculty)</td>
+              <td>₹ 5,000</td>
+            </tr>
+            <tr>
+              <td>Annual Membership (Faculty)</td>
+              <td>₹ 1,000</td>
+            </tr>
+            <tr>
+              <td>Research Scholar Member</td>
+              <td>₹ 600</td>
+            </tr>
+            <tr>
+              <td>Institutional (University / B-School)</td>
+              <td>₹ 25,000</td>
+            </tr>
+            <tr>
+              <td>Institutional (College / Institute)</td>
+              <td>₹ 12,000</td>
+            </tr>
+          </table>
+        </div>
       </div>
 
-      <!-- Bank Details -->
-      <div class="payment-card">
-        <h3>Bank Transfer / NEFT / IMPS</h3>
-        <table class="info-table">
-          <tr>
-            <td>Account Name</td>
-            <td>Indian Commerce and Management Teachers Association</td>
-          </tr>
-          <tr>
-            <td>Account Type</td>
-            <td>Current Account</td>
-          </tr>
-          <tr>
-            <td>Bank Name</td>
-            <td>State Bank of India</td>
-          </tr>
-          <tr>
-            <td>UPI / VPA</td>
-            <td>icmta@sbi</td>
-          </tr>
-          <tr>
-            <td>Payment Receipt</td>
-            <td>support@icmta.in</td>
-          </tr>
-        </table>
+      <!-- RIGHT COLUMN: Payment Information Card (PhonePe QR & Offline Transfer) -->
+      <div>
+        <div class="payment-card" style="text-align:center;border-top:4px solid #5f259f;">
+          <h3 style="color:#5f259f;border-bottom:none;margin-bottom:4px;text-align:center;">Pay Using PhonePe</h3>
+          <p style="font-size:13.5px;color:#475569;margin:0 0 14px 0;line-height:1.4;">
+            Scan the QR code using the PhonePe app to make your payment.
+          </p>
+
+          <div style="display:inline-block;padding:12px;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 16px rgba(95,37,159,0.08);max-width:100%;">
+            <img src="../assets/images/phonepe-qr.png" alt="PhonePe QR Code for ICMTA Membership Payment" style="max-width:280px;width:100%;height:auto;display:block;margin:0 auto;border-radius:8px;">
+          </div>
+
+          <p style="font-size:13.5px;font-weight:700;color:#334155;margin:12px 0 6px 0;">
+            Recipient: Gundupagi Manjunath
+          </p>
+
+          <div style="margin:10px 0 16px 0;padding:10px 14px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;font-size:14.5px;color:#5b21b6;font-weight:700;">
+            Amount Payable: <span id="qrPayAmount" style="font-size:18px;font-weight:800;">—</span>
+          </div>
+
+          <!-- UTR / Transaction Submission Form -->
+          <div id="qrSubmissionBox" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;text-align:left;">
+            <h4 style="margin:0 0 10px 0;font-size:14.5px;color:#1e293b;font-weight:700;">Submit Payment Reference</h4>
+            <form id="manualPaymentForm" onsubmit="submitManualPayment(event)">
+              <div style="margin-bottom:12px;">
+                <label for="inputUtr" style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">PhonePe Transaction ID / UTR Number *</label>
+                <input type="text" id="inputUtr" required placeholder="e.g. T2609... or 12-digit UTR" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;">
+              </div>
+              <div style="margin-bottom:14px;">
+                <label for="inputProof" style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:4px;">Payment Screenshot (Optional)</label>
+                <input type="file" id="inputProof" accept="image/*,application/pdf" style="width:100%;font-size:12.5px;color:#475569;">
+              </div>
+              <div id="manualSubmitAlert" style="display:none;padding:10px 12px;border-radius:6px;font-size:13px;margin-bottom:12px;"></div>
+              <button type="submit" id="btnSubmitPayment" class="btn primary" style="width:100%;padding:11px 18px;font-size:14.5px;font-weight:700;border-radius:6px;background:#5f259f;border-color:#5f259f;">
+                Submit Payment Details &rarr;
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Bank Transfer Details Card -->
+        <div class="payment-card" style="margin-top:24px;">
+          <h3>Bank Transfer / NEFT / IMPS</h3>
+          <table class="info-table">
+            <tr>
+              <td>Account Name</td>
+              <td>Indian Commerce and Management Teachers Association</td>
+            </tr>
+            <tr>
+              <td>Account Type</td>
+              <td>Current Account</td>
+            </tr>
+            <tr>
+              <td>Bank Name</td>
+              <td>State Bank of India</td>
+            </tr>
+            <tr>
+              <td>UPI / VPA</td>
+              <td>icmta@sbi</td>
+            </tr>
+            <tr>
+              <td>Payment Receipt</td>
+              <td>support@icmta.in</td>
+            </tr>
+          </table>
+          <p style="font-size:12.5px;color:#64748b;margin:12px 0 0 0;line-height:1.4;">
+            For manual NEFT/IMPS remittance, please email your transaction UTR reference with your Application ID to <strong>support@icmta.in</strong>.
+          </p>
+        </div>
       </div>
 
     </div>
+  </div>
 
-    <div style="margin-top:28px;padding:20px;background:#eaf5fb;border:1px solid #b9d2e3;border-radius:10px">
-      <h4 style="color:#1e6c93;margin-bottom:8px">Important Note on Payment Verification</h4>
-      <p style="font-size:13.5px;color:#334155;line-height:1.6;margin:0">
-        After completing the fee remittance, please ensure you submit your Application Form on the <a href="membership.html#apply-section" style="color:#1e6c93;font-weight:700;text-decoration:underline">Membership Page</a>. The Secretariat desk will verify your transaction reference and issue your official ICMTA Member ID.
-      </p>
+  <!-- State 5: PAYMENT SUCCESS SCREEN -->
+  <div id="paymentSuccessView" style="display:none;max-width:680px;margin:20px auto 40px auto;background:#ffffff;border:1px solid #e2e8f0;border-top:5px solid #16a34a;border-radius:14px;box-shadow:0 8px 30px rgba(22,163,74,0.1);padding:36px 32px;text-align:center;">
+    <div style="width:68px;height:68px;border-radius:50%;background:#dcfce7;color:#16a34a;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;font-weight:bold;">
+      ✓
+    </div>
+    <h2 style="font-size:26px;font-weight:800;color:#0f172a;margin:0 0 6px 0;">Payment Verified!</h2>
+    <p style="font-size:15px;color:#475569;margin:0 0 24px 0;">Your membership payment has been verified successfully.</p>
+
+    <!-- Receipt Details Card -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:22px;text-align:left;margin-bottom:24px;">
+      <table class="info-table" style="width:100%;">
+        <tr>
+          <td>Application ID:</td>
+          <td id="successAppId" style="font-weight:800;color:#1e6c93;">—</td>
+        </tr>
+        <tr>
+          <td>Membership Category:</td>
+          <td id="successCategory">—</td>
+        </tr>
+        <tr style="background:#ecfdf5;">
+          <td style="font-weight:700;color:#065f46;">Amount Paid:</td>
+          <td id="successAmount" style="font-weight:800;color:#16a34a;font-size:20px;">—</td>
+        </tr>
+        <tr>
+          <td>Transaction ID / UTR:</td>
+          <td id="successTxnId" style="font-family:monospace;font-size:13.5px;color:#0f172a;">—</td>
+        </tr>
+        <tr>
+          <td>Payment Method:</td>
+          <td id="successMethod">—</td>
+        </tr>
+        <tr>
+          <td>Verification Date:</td>
+          <td id="successDate">—</td>
+        </tr>
+      </table>
     </div>
 
-    <div style="margin-top:24px;display:flex;gap:14px;flex-wrap:wrap">
-      <a href="membership.html#apply-section" class="btn primary" style="padding:11px 24px">Proceed to Application Form &rarr;</a>
-      <a href="contact.html" class="btn secondary" style="padding:11px 24px">Contact Secretariat</a>
+    <!-- Review Status Note -->
+    <div style="padding:14px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0369a1;font-size:13.5px;margin-bottom:28px;line-height:1.5;">
+      ℹ️ Your application is now under review. You will be notified once it is approved by the ICMTA Secretariat.
     </div>
 
+    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+      <a href="../index.html" class="btn primary" style="padding:12px 30px;font-size:15px;font-weight:700;">
+        Back to Home &rarr;
+      </a>
+      <button type="button" class="btn secondary" onclick="window.print()" style="padding:12px 24px;font-size:15px;">
+        Print Receipt
+      </button>
+    </div>
   </div>
 
 </main>
 
-<footer class="footer">
+<footer class="footer" style="margin-top:48px;">
   <div class="icm-fgrid">
     <div class="icm-fcol icm-fcol-brand">
       <div class="footer-brand">
@@ -231,7 +521,7 @@
       <h4>Quick links</h4>
       <a href="public-directory.html">Member Directory</a>
       <a href="events.html">Events</a>
-      <a href="membership.html#apply-section">Become a Member</a>
+      <a href="membership-application.html">Become a Member</a>
       <a href="resources.html">ICMTA Resources</a>
       <a href="contact.html">Contact</a>
     </div>
@@ -242,28 +532,257 @@
       <a href="initiatives.html">Our initiatives</a>
       <a href="about-us.html#code-of-conduct">Code of conduct</a>
     </div>
-    <div class="icm-fcol">
-      <h4>Stay informed</h4>
-      <p class="icm-fnl">Event notices and calls for papers, a few times a year.</p>
-      <form class="icm-fnlform" action="#" method="post">
-        <input type="email" name="email" placeholder="your@institution.ac.in" aria-label="Email address">
-        <button type="submit">Subscribe</button>
-      </form>
-      <div class="icm-fsocial">
-        <a href="#" aria-label="LinkedIn">in</a>
-        <a href="#" aria-label="YouTube">&#9654;</a>
-        <a href="#" aria-label="WhatsApp">&#9990;</a>
-      </div>
-    </div>
   </div>
   <div class="icm-fbot">
     <span>&copy; 2026 ICMTA &middot; icmta.in</span>
     <span><a href="#">Privacy notice</a> <a href="admin.html">Administrator</a></span>
-    
   </div>
 </footer>
 
-<script src="../js/app.js"></script>
+<script>
+let currentAppData = null;
+
+// Base API URL
+function getApiBaseUrl() {
+  return window.location.origin.includes('5000') 
+    ? '' 
+    : 'http://localhost:5000';
+}
+
+// Load application payment details from backend
+async function loadApplicationPayment(applicationId) {
+  const loading = document.getElementById('paymentLoadingState');
+  const errorBox = document.getElementById('paymentErrorState');
+  const mainView = document.getElementById('paymentMainView');
+  const noIdPrompt = document.getElementById('paymentNoIdState');
+  const successView = document.getElementById('paymentSuccessView');
+
+  if (noIdPrompt) noIdPrompt.style.display = 'none';
+  if (errorBox) errorBox.style.display = 'none';
+  if (mainView) mainView.style.display = 'none';
+  if (successView) successView.style.display = 'none';
+  if (loading) loading.style.display = 'block';
+
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/payments/application/${encodeURIComponent(applicationId)}`);
+    const result = await res.json();
+
+    if (!res.ok || !result.success) {
+      throw new Error(result.detail || result.message || `Application #${applicationId} could not be retrieved.`);
+    }
+
+    currentAppData = result.data;
+    renderApplicationView(currentAppData);
+
+  } catch (err) {
+    if (loading) loading.style.display = 'none';
+    if (errorBox) {
+      document.getElementById('errorTitle').textContent = `Application #${applicationId} Not Found`;
+      document.getElementById('errorDescription').textContent = err.message || 'Unable to retrieve application details.';
+      errorBox.style.display = 'block';
+    }
+  }
+}
+
+function renderApplicationView(data) {
+  const loading = document.getElementById('paymentLoadingState');
+  const mainView = document.getElementById('paymentMainView');
+  const successView = document.getElementById('paymentSuccessView');
+
+  if (loading) loading.style.display = 'none';
+
+  // If already paid, show success receipt screen
+  if (data.is_paid || data.payment_status === 'Paid') {
+    renderSuccessScreen({
+      application_id: data.application_id,
+      membership_category: data.membership_category,
+      amount_paid: data.amount,
+      transaction_id: data.transaction_id || 'VERIFIED_ON_RECORD',
+      payment_method: data.payment_method || 'PhonePe UPI',
+      paid_at: data.paid_at ? new Date(data.paid_at).toLocaleString('en-IN') : 'Verified'
+    });
+    return;
+  }
+
+  if (mainView) mainView.style.display = 'block';
+
+  const formattedAppId = 'APL' + String(data.application_id).padStart(6, '0') + ` (#${data.application_id})`;
+  document.getElementById('summaryAppId').textContent = formattedAppId;
+  document.getElementById('summaryApplicantName').textContent = data.full_name || 'N/A';
+  document.getElementById('summaryCategory').textContent = data.membership_category || 'N/A';
+
+  const formattedAmount = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: data.currency || 'INR',
+    maximumFractionDigits: 0
+  }).format(data.amount);
+
+  document.getElementById('summaryAmount').textContent = formattedAmount;
+  const qrAmt = document.getElementById('qrPayAmount');
+  if (qrAmt) qrAmt.textContent = formattedAmount;
+
+  // Status Badge and Notification Banners
+  const badge = document.getElementById('paymentStatusBadge');
+  const unpaidNotice = document.getElementById('unpaidNotice');
+  const pendingNotice = document.getElementById('pendingNotice');
+  const failedNotice = document.getElementById('failedNotice');
+  const submitBox = document.getElementById('qrSubmissionBox');
+
+  if (unpaidNotice) unpaidNotice.style.display = 'none';
+  if (pendingNotice) pendingNotice.style.display = 'none';
+  if (failedNotice) failedNotice.style.display = 'none';
+
+  if (data.payment_status === 'Pending') {
+    if (badge) {
+      badge.textContent = 'Verification Pending';
+      badge.style.background = '#fef3c7';
+      badge.style.color = '#92400e';
+    }
+    if (pendingNotice) {
+      pendingNotice.style.display = 'block';
+      const txnEl = document.getElementById('pendingTxnId');
+      if (txnEl) txnEl.textContent = data.transaction_id || 'Submitted';
+    }
+    const utrInput = document.getElementById('inputUtr');
+    if (utrInput && data.transaction_id) {
+      utrInput.value = data.transaction_id;
+    }
+    const btnSubmit = document.getElementById('btnSubmitPayment');
+    if (btnSubmit) {
+      btnSubmit.textContent = 'Update Submitted UTR Details →';
+    }
+  } else if (data.payment_status === 'Failed') {
+    if (badge) {
+      badge.textContent = 'Payment Failed';
+      badge.style.background = '#fee2e2';
+      badge.style.color = '#991b1b';
+    }
+    if (failedNotice) failedNotice.style.display = 'block';
+  } else {
+    if (badge) {
+      badge.textContent = 'Payment Pending';
+      badge.style.background = '#e0f2fe';
+      badge.style.color = '#0369a1';
+    }
+    if (unpaidNotice) unpaidNotice.style.display = 'block';
+  }
+}
+
+// Handle manual PhonePe UTR submission
+async function submitManualPayment(e) {
+  e.preventDefault();
+  if (!currentAppData) return;
+
+  const utrInput = document.getElementById('inputUtr');
+  const proofInput = document.getElementById('inputProof');
+  const submitBtn = document.getElementById('btnSubmitPayment');
+  const alertEl = document.getElementById('manualSubmitAlert');
+
+  const utrVal = utrInput ? utrInput.value.trim() : '';
+  if (!utrVal || utrVal.length < 4) {
+    alert('Please enter a valid PhonePe Transaction ID or UTR number.');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting Details...';
+  if (alertEl) alertEl.style.display = 'none';
+
+  try {
+    const formData = new FormData();
+    formData.append('application_id', currentAppData.application_id);
+    formData.append('transaction_id', utrVal);
+    formData.append('payment_method', 'PhonePe UPI');
+
+    if (proofInput && proofInput.files.length > 0) {
+      formData.append('proof', proofInput.files[0]);
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/api/payments/manual-submission`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      throw new Error(result.detail || result.message || 'Failed to submit payment details.');
+    }
+
+    if (alertEl) {
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#ecfdf5';
+      alertEl.style.border = '1px solid #a7f3d0';
+      alertEl.style.color = '#065f46';
+      alertEl.innerHTML = '<strong>Success!</strong> Payment reference recorded. Waiting for admin verification.';
+    }
+
+    // Refresh application payment details
+    await loadApplicationPayment(currentAppData.application_id);
+
+  } catch (err) {
+    if (alertEl) {
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#fef2f2';
+      alertEl.style.border = '1px solid #fecaca';
+      alertEl.style.color = '#991b1b';
+      alertEl.textContent = err.message || 'Error submitting payment details.';
+    }
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Payment Details →';
+  }
+}
+
+// Render Payment Success Screen
+function renderSuccessScreen(data) {
+  const mainView = document.getElementById('paymentMainView');
+  const successView = document.getElementById('paymentSuccessView');
+
+  if (mainView) mainView.style.display = 'none';
+  if (successView) successView.style.display = 'block';
+
+  const formattedAppId = 'APL' + String(data.application_id).padStart(6, '0') + ` (#${data.application_id})`;
+  document.getElementById('successAppId').textContent = formattedAppId;
+  document.getElementById('successCategory').textContent = data.membership_category;
+
+  const formattedAmount = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: data.currency || 'INR',
+    maximumFractionDigits: 0
+  }).format(data.amount_paid);
+
+  document.getElementById('successAmount').textContent = formattedAmount;
+  document.getElementById('successTxnId').textContent = data.transaction_id || 'N/A';
+  document.getElementById('successMethod').textContent = data.payment_method || 'PhonePe UPI';
+  document.getElementById('successDate').textContent = data.paid_at || new Date().toLocaleString('en-IN');
+
+  successView.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function loadByManualAppId() {
+  const val = document.getElementById('lookupAppId')?.value?.trim();
+  if (val) {
+    window.location.search = `?application_id=${encodeURIComponent(val)}`;
+  }
+}
+
+function loadFromPromptInput() {
+  const val = document.getElementById('manualAppIdInput')?.value?.trim();
+  if (val) {
+    window.location.search = `?application_id=${encodeURIComponent(val)}`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const appId = params.get('application_id');
+  if (appId) {
+    loadApplicationPayment(appId);
+  } else {
+    const promptEl = document.getElementById('paymentNoIdState');
+    if (promptEl) promptEl.style.display = 'block';
+  }
+});
+</script>
 </body>
 </html>
-

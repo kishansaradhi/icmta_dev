@@ -180,87 +180,6 @@
   line-height:1.5;
 }
 
-/* Application Form */
-.apply-form-container{
-  background:#ffffff;
-  border:1px solid #e2e8f0;
-  border-radius:12px;
-  padding:34px;
-  box-shadow:var(--shadow-md);
-}
-
-/* Membership heading style */
-.membership-choose{
-  font-size:1.35rem;
-  font-weight:800;
-  color:#0f172a;
-  margin-bottom:8px;
-}
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-}
-.full-col{
-  grid-column:1/-1;
-}
-.form-group{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-.form-group label{
-  font-size:13px;
-  font-weight:700;
-  color:#334155;
-}
-.form-group input,.form-group select,.form-group textarea{
-  width:100%;
-  padding:10px 14px;
-  border:1px solid #cbd5df;
-  border-radius:8px;
-  font-size:13.5px;
-  outline:none;
-  transition:all .15s ease;
-}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
-  border-color:#1e6c93;
-  box-shadow:0 0 0 3px rgba(30,108,147,0.12);
-}
-.form-help{
-  font-size:11.5px;
-  color:#64748b;
-}
-
-/* Photo Upload Box */
-.photo-upload-container{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-.photo-preview-box{
-  width:58px;
-  height:58px;
-  border-radius:8px;
-  border:2px dashed #cbd5df;
-  background:#f8fafc;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  flex-shrink:0;
-}
-.photo-preview-box img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:none;
-}
-.photo-preview-placeholder{
-  font-size:24px;
-  color:#94a3b8;
-}
-
 /* Existing Member Option Box */
 .existing-member-box{
   background:linear-gradient(135deg, #eaf5fb 0%, #f0f7fb 100%);
@@ -302,7 +221,6 @@
 }
 @media(max-width:980px){
   .steps-grid{grid-template-columns:1fr 1fr}
-  .form-grid{grid-template-columns:1fr}
 }
 @media(max-width:640px){
   .benefits-grid{grid-template-columns:1fr}
@@ -364,9 +282,8 @@
       <span class="icm-navitem">
         <a href="membership.html" class="nav-item active">Membership <i class="icm-caret">&#9662;</i></a>
         <div class="icm-dd">
-          <a href="membership.html#why">Why Join</a>
-          <a href="membership.html#categories">Categories &amp; Fees</a>
-          <a href="membership.html#apply-section">How to Apply</a>
+          <a href="membership.html">Membership</a>
+          <a href="membership-application.html">Apply for Membership</a>
         </div>
       </span>
       <span class="icm-sitesearch" style="position:relative">
@@ -404,7 +321,7 @@
       </p>
     </div>
     <div>
-      <a href="#apply-section" class="btn primary" style="font-size:14.5px;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:700">
+      <a href="membership-application.html" class="btn primary" style="font-size:14.5px;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:700">
         Get Membership &rarr;
       </a>
     </div>
@@ -517,7 +434,7 @@
         <ul class="cat-features">
           <li>Ideal for: Professors • Associate Professors • Assistant Professors • Lecturers • Academic Professionals</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Individual Academic Membership')" class="btn primary full">Apply</a>
+        <a href="membership-application.html?category=Life%20Member%20(Faculty)" class="btn primary full">Apply</a>
       </div>
 
       <div class="category-card" data-price="TBD">
@@ -526,7 +443,7 @@
         <ul class="cat-features">
           <li>Ideal for: Ph.D. Scholars • Research Scholars • Early-Career Researchers</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Research Scholar Membership')" class="btn secondary full">Apply</a>
+        <a href="membership-application.html?category=Research%20Scholar%20Member" class="btn secondary full">Apply</a>
       </div>
 
       <div class="category-card" data-price="TBD">
@@ -535,7 +452,7 @@
         <ul class="cat-features">
           <li>Ideal for: UG • PG • Professional Programme Students</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Student Membership')" class="btn secondary full">Apply</a>
+        <a href="membership-application.html?category=Student%20Membership" class="btn secondary full">Apply</a>
       </div>
 
       <div class="category-card" data-price="TBD">
@@ -544,7 +461,7 @@
         <ul class="cat-features">
           <li>Ideal for: Industry Professionals • Consultants • Entrepreneurs • Practitioners</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Professional/Practitioner Membership')" class="btn secondary full">Apply</a>
+        <a href="membership-application.html?category=Professional%20/%20Practitioner" class="btn secondary full">Apply</a>
       </div>
 
       <div class="category-card featured" data-price="TBD">
@@ -553,7 +470,7 @@
         <ul class="cat-features">
           <li>Ideal for: Universities • Colleges • B-Schools • Departments • Research Institutions</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Institutional Membership')" class="btn primary full">Apply</a>
+        <a href="membership-application.html?category=Institutional%20(University%20/%20B-School)" class="btn primary full">Apply</a>
       </div>
 
       <div class="category-card" data-price="TBD">
@@ -562,7 +479,7 @@
         <ul class="cat-features">
           <li>Ideal for: Retired Professors • Senior Academicians • Distinguished Academic Contributors</li>
         </ul>
-        <a href="#apply-section" onclick="selectPlan('Distinguished / Emeritus Member')" class="btn secondary full">Apply</a>
+        <a href="membership-application.html?category=Distinguished%20/%20Emeritus" class="btn secondary full">Apply</a>
       </div>
 
     </div>
@@ -597,195 +514,11 @@
         <p>Receive your official ICMTA Member ID and activate your verified public profile in the Directory.</p>
       </div>
     </div>
-  </div>
-
-  <!-- 5. Online Application Form -->
-  <div id="apply-section" class="section-block apply-form-container">
-    <h2> Online Membership Application</h2>
-    <p>Complete the application form below. Our secretariat desk will reach out with payment and onboarding instructions.</p>
-
-    <form id="membershipForm" onsubmit="handleMembershipSubmit(event)" style="margin-top:20px">
-      <div class="form-grid">
-        
-        <div class="form-group">
-          <label>Membership Category *</label>
-          <select id="mCategory" required>
-            <option value="Life Member (Faculty)">Life Member (Faculty) — ₹ 5,000</option>
-            <option value="Annual Member (Faculty)">Annual Member (Faculty) — ₹ 1,000</option>
-            <option value="Research Scholar Member">Research Scholar Member — ₹ 600</option>
-            <option value="Institutional (University / B-School)">Institutional (University / B-School) — ₹ 25,000</option>
-            <option value="Institutional (College / Institute)">Institutional (College / Institute) — ₹ 12,000</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Academic Title *</label>
-          <select id="mTitle" required>
-            <option>Dr.</option>
-            <option>Prof.</option>
-            <option>Mr.</option>
-            <option>Mrs.</option>
-            <option>Ms.</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>First Name *</label>
-          <input id="mFirstName" required placeholder="first name">
-        </div>
-
-        <div class="form-group">
-          <label>Middle Name </label>
-          <input id="mMiddleName" placeholder="middle name">
-        </div>
-
-        <div class="form-group">
-          <label>Last Name *</label>
-          <input id="mLastName" required placeholder="last name">
-        </div>
-
-        <div class="form-group">
-          <label>Date of Birth *</label>
-          <input id="mDob" type="date" required>
-        </div>
-
-        <div class="form-group">
-          <label>Personal Email *</label>
-          <input id="mPersonalEmail" type="email" required placeholder="e.g. ramesh.personal@gmail.com">
-        </div>
-
-        <div class="form-group">
-          <label>Professional Email *</label>
-          <input id="mEmail" type="email" required placeholder="e.g. ramesh@university.ac.in">
-        </div>
-
-        <div class="form-group">
-          <label>Mobile *</label>
-          <input id="mMobile" type="tel" required placeholder="e.g. +91 9876543210">
-        </div>
-
-        <div class="form-group">
-          <label>WhatsApp *</label>
-          <input id="mWhatsapp" type="tel" required placeholder="e.g. +91 9876543210">
-        </div>
-
-        <div class="form-group">
-          <label>WhatsApp Number 2 (Optional)</label>
-          <input id="mWhatsapp2" type="tel" placeholder="e.g. +91 9123456780">
-        </div>
-
-        <div class="form-group">
-          <label>Upload Passport Size Photograph *</label>
-          <div class="photo-upload-container">
-            <div class="photo-preview-box" id="photoPreviewBox">
-              <span class="photo-preview-placeholder" id="photoPlaceholder">📷</span>
-              <img id="photoPreviewImg" alt="Photo Preview">
-            </div>
-            <div style="flex-grow:1">
-              <input id="mPhoto" type="file" accept="image/*" required onchange="handlePhotoPreview(event)">
-              <span class="form-help">Accepted formats: JPG, PNG, WEBP.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Highest Qualification *</label>
-          <input id="mQual" required placeholder="e.g. Ph.D. in Commerce, M.Com, NET/SET">
-        </div>
-
-        <div class="form-group">
-          <label>Designation *</label>
-          <input id="mDesig" required placeholder="e.g. Associate Professor / Dean">
-        </div>
-
-        <div class="form-group">
-          <label>Department *</label>
-          <input id="mDept" required placeholder="e.g. Department of Commerce & Management">
-        </div>
-
-        <div class="form-group">
-          <label>College / University Name *</label>
-          <input id="mCollege" required placeholder="e.g. Sri Krishnadevaraya University">
-        </div>
-
-        <div class="form-group full-col">
-          <label>College Address *</label>
-          <textarea id="mCollegeAddress" required placeholder="Enter full campus / institutional address..." style="min-height:70px"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Pincode *</label>
-          <input id="mPincode" required placeholder="e.g. 515003">
-        </div>
-
-        <div class="form-group">
-          <label>State / Region *</label>
-          <input id="mState" required placeholder="e.g. Andhra Pradesh, Telangana, Karnataka">
-        </div>
-
-        <div class="form-group full-col">
-          <label>Country *</label>
-          <input id="mCountry" required value="India" placeholder="e.g. India">
-        </div>
-
-        <div class="form-group">
-          <label>Google Scholar Profile (Optional)</label>
-          <input id="mScholar" placeholder="e.g. https://scholar.google.com/citations?user=...">
-        </div>
-
-        <div class="form-group">
-          <label>LinkedIn Profile (Optional)</label>
-          <input id="mLinkedin" placeholder="e.g. https://linkedin.com/in/username">
-        </div>
-
-        <div class="form-group full-col">
-          <label>ORCID (Optional)</label>
-          <input id="mOrcid" placeholder="e.g. 0000-0002-1825-0097 or https://orcid.org/...">
-        </div>
-
-        <div class="form-group full-col">
-          <label>Primary Areas of Expertise & Research Specialization</label>
-          <input id="mExpertise" placeholder="e.g. Financial Accounting, Taxation, Corporate Finance, Strategic Management">
-          <span class="form-help">Separate multiple areas with commas.</span>
-        </div>
-
-        <div class="form-group full-col">
-          <label>Research Guideship (Optional)</label>
-          <input id="mGuideship" placeholder="e.g. Ph.D. Supervisor (3 Scholars Awarded), M.Phil. Guide">
-        </div>
-
-      </div>
-
-      <!-- Privacy Policy & Member Consent -->
-      <div class="consent-section" style="margin-top:24px;padding:18px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #1e6c93;border-radius:8px;">
-        <h4 style="margin:0 0 10px;font-size:15px;font-weight:700;color:#1e6c93;">Privacy Policy &amp; Member Consent</h4>
-        <p style="margin:0 0 10px;font-size:12.5px;line-height:1.6;color:#475569;">
-          By submitting a membership application or information through this website, you consent to ICMTA collecting, processing, and using your information for membership administration, official communication, and legitimate academic and organizational activities. You confirm that the information provided by you is accurate and authorize ICMTA to use it in accordance with this Privacy Policy.
-        </p>
-        <p style="margin:0 0 14px;font-size:12.5px;line-height:1.6;color:#475569;">
-          <strong>Privacy Policy:</strong> ICMTA respects your privacy and collects personal information submitted through this website only for membership administration, communication, academic activities, and other legitimate organizational purposes. We do not sell or misuse personal information and take reasonable measures to protect the information entrusted to us, subject to applicable laws.
-        </p>
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <input type="checkbox" id="mConsentCheckbox" required style="margin-top:3px;width:17px;height:17px;cursor:pointer;flex-shrink:0;">
-          <label for="mConsentCheckbox" style="font-size:13px;font-weight:600;color:#1e293b;line-height:1.5;cursor:pointer;">
-            I have read and understood the above Privacy Policy and Member Consent, and I agree to the terms.
-          </label>
-        </div>
-        <div id="consentErrorMsg" style="display:none;margin-top:10px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:12.5px;color:#dc2626;font-weight:600;">
-          Please read and accept the Privacy Policy &amp; Member Consent before submitting your application.
-        </div>
-      </div>
-
-      <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap">
-        <button type="reset" class="btn secondary">Reset Form</button>
-        <button type="submit" id="mSubmitBtn" class="btn primary" disabled style="padding:11px 28px;font-size:14.5px;opacity:0.55;cursor:not-allowed;">Submit Application &rarr;</button>
-      </div>
-
-      <div id="appSuccessAlert" style="display:none;margin-top:20px;padding:16px;background:#eaf7f0;border-left:4px solid #21865b;border-radius:8px;color:#1d754e">
-        <b style="display:block;font-size:15px;margin-bottom:4px">🎉 Application Submitted Successfully!</b>
-        <p style="margin:0;font-size:13px;color:#2e694d">Thank you for applying to the Indian Commerce and Management Teachers Association(ICMTA). Our secretariat team will review your application and email the formal confirmation within 1-2 business days.</p>
-      </div>
-    </form>
+    <div style="text-align:center;margin-top:32px;">
+      <a href="membership-application.html" class="btn primary" style="padding:14px 36px;font-size:16px;font-weight:700;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border-radius:8px;">
+        Apply for Membership &rarr;
+      </a>
+    </div>
   </div>
 
   <!-- 6. Existing Member / Profile Search Option -->
@@ -815,7 +548,7 @@
       <h4>Quick links</h4>
       <a href="public-directory.html">Member Directory</a>
       <a href="events.html">Events</a>
-      <a href="membership.html#apply-section">Become a Member</a>
+      <a href="membership-application.html">Become a Member</a>
       <a href="resources.html">ICMTA Resources</a>
       <a href="contact.html">Contact</a>
     </div>
@@ -874,150 +607,6 @@ function switchCategory(type){
     if(indGrid) indGrid.style.display = 'none';
   }
 }
-
-function selectPlan(planName){
-  const sel = document.getElementById('mCategory');
-  if(sel){
-    for(let i=0; i<sel.options.length; i++){
-      if(sel.options[i].value.includes(planName) || sel.options[i].text.includes(planName)){
-        sel.selectedIndex = i;
-        break;
-      }
-    }
-  }
-}
-
-function handlePhotoPreview(e){
-  const file = e.target.files && e.target.files[0];
-  const img = document.getElementById('photoPreviewImg');
-  const placeholder = document.getElementById('photoPlaceholder');
-  if(file){
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      if(img){
-        img.src = evt.target.result;
-        img.style.display = 'block';
-      }
-      if(placeholder){
-        placeholder.style.display = 'none';
-      }
-    };
-    reader.readAsDataURL(file);
-  } else {
-    resetPhotoPreview();
-  }
-}
-
-function resetPhotoPreview(){
-  const img = document.getElementById('photoPreviewImg');
-  const placeholder = document.getElementById('photoPlaceholder');
-  if(img){
-    img.src = '';
-    img.style.display = 'none';
-  }
-  if(placeholder){
-    placeholder.style.display = 'block';
-  }
-}
-
-function handleMembershipSubmit(e){
-  e.preventDefault();
-
-  const consentCheckbox = document.getElementById('mConsentCheckbox');
-  const consentErrorMsg = document.getElementById('consentErrorMsg');
-  const submitBtn = document.getElementById('mSubmitBtn');
-
-  // Safety validation: verify consent checkbox is checked
-  if(!consentCheckbox || !consentCheckbox.checked){
-    if(consentErrorMsg){
-      consentErrorMsg.style.display = 'block';
-      consentErrorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    if(submitBtn){
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.55';
-      submitBtn.style.cursor = 'not-allowed';
-    }
-    return;
-  }
-
-  if(consentErrorMsg){
-    consentErrorMsg.style.display = 'none';
-  }
-
-  const alertBox = document.getElementById('appSuccessAlert');
-  if(alertBox){
-    alertBox.style.display = 'block';
-    alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('membershipForm').reset();
-    resetPhotoPreview();
-    if(consentCheckbox){
-      consentCheckbox.checked = false;
-    }
-    if(submitBtn){
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.55';
-      submitBtn.style.cursor = 'not-allowed';
-    }
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function(){
-  const form = document.getElementById('membershipForm');
-  const consentCheckbox = document.getElementById('mConsentCheckbox');
-  const submitBtn = document.getElementById('mSubmitBtn');
-  const consentErrorMsg = document.getElementById('consentErrorMsg');
-
-  // Ensure checkbox is unchecked and Submit Application is disabled by default
-  if(consentCheckbox && submitBtn){
-    consentCheckbox.checked = false;
-    submitBtn.disabled = true;
-    submitBtn.style.opacity = '0.55';
-    submitBtn.style.cursor = 'not-allowed';
-
-    consentCheckbox.addEventListener('change', function(){
-      if(this.checked){
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-        submitBtn.style.cursor = 'pointer';
-        if(consentErrorMsg){
-          consentErrorMsg.style.display = 'none';
-        }
-      } else {
-        submitBtn.disabled = true;
-        submitBtn.style.opacity = '0.55';
-        submitBtn.style.cursor = 'not-allowed';
-      }
-    });
-  }
-
-  if(form){
-    form.addEventListener('reset', function(){
-      setTimeout(function(){
-        resetPhotoPreview();
-        if(consentCheckbox && submitBtn){
-          consentCheckbox.checked = false;
-          submitBtn.disabled = true;
-          submitBtn.style.opacity = '0.55';
-          submitBtn.style.cursor = 'not-allowed';
-        }
-        if(consentErrorMsg){
-          consentErrorMsg.style.display = 'none';
-        }
-      }, 50);
-    });
-  }
-  // Initialize membership tabs (only individual tab present)
-  const tabInd = document.getElementById('tab-individual');
-  const indGrid = document.getElementById('cat-individual');
-  if(indGrid){
-    indGrid.style.display = 'grid';
-  }
-  if(tabInd){
-    tabInd.setAttribute('aria-selected','true');
-    tabInd.setAttribute('tabindex','0');
-  }
-});
 </script>
 
 <script src="../js/app.js"></script>

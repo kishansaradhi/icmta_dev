@@ -24,6 +24,8 @@ class Settings:
         if origin.strip()
     ]
 
+
+
     upload_dir = os.getenv(
         "UPLOAD_DIR",
         str(BASE_DIR / "uploads")

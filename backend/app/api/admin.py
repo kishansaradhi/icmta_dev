@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -17,6 +17,7 @@ from app.core.security import (
 from app.models.admin_user import AdminUser
 from app.models.member import Member
 from app.models.membership_application import MembershipApplication
+from app.models.membership_payment import MembershipPayment
 from app.models.event import Event
 from app.schemas.auth import AdminLoginRequest
 from app.schemas.member import MemberResponse
@@ -391,3 +392,123 @@ def review_event(
         raise HTTPException(status_code=400, detail=str(exc))
 
     return {"success": True, "data": {"event_id": event_id, "status": event.status}}
+
+
+@router.get("/admin/payments")
+def admin_payments(
+    status: str | None = None,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    stmt = (
+        select(MembershipPayment, MembershipApplication)
+        .outerjoin(
+            MembershipApplication,
+            MembershipPayment.application_id == MembershipApplication.application_id,
+        )
+        .order_by(desc(MembershipPayment.payment_id))
+    )
+    if status:
+        stmt = stmt.where(MembershipPayment.payment_status == status)
+
+    rows = db.execute(stmt).all()
+
+    return {
+        "success": True,
+        "data": [
+            {
+                "payment_id": p.payment_id,
+                "application_id": p.application_id,
+                "member_id": p.member_id,
+                "applicant_name": app.full_name if app else None,
+                "applicant_email": app.professional_email or app.personal_email if app else None,
+                "applicant_mobile": app.mobile if app else None,
+                "membership_category": p.membership_category,
+                "amount": float(p.amount),
+                "currency": p.currency,
+                "payment_method": p.payment_method,
+                "payment_gateway": p.payment_gateway,
+                "transaction_id": p.transaction_id,
+                "payment_status": p.payment_status,
+                "application_status": app.approval_status if app else None,
+                "paid_at": p.paid_at.isoformat() if p.paid_at else None,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+                "admin_notes": app.admin_notes if app else None,
+            }
+            for p, app in rows
+        ],
+        "count": len(rows),
+    }
+
+
+@router.post("/admin/payments/{payment_id}/verify")
+def verify_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    """
+    Mark payment as Paid after admin verifies UTR/transaction.
+    IMPORTANT: Membership is NOT automatically activated. Application remains Pending
+    until admin approves the application separately.
+    """
+    payment = db.get(MembershipPayment, payment_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment record not found.")
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    payment.payment_status = "Paid"
+    payment.paid_at = now
+    payment.updated_at = now
+
+    db.commit()
+    db.refresh(payment)
+
+    return {
+        "success": True,
+        "message": "Payment verified and marked as Paid.",
+        "data": {
+            "payment_id": payment.payment_id,
+            "application_id": payment.application_id,
+            "payment_status": payment.payment_status,
+            "paid_at": payment.paid_at.isoformat(),
+        },
+    }
+
+
+@router.post("/admin/payments/{payment_id}/reject")
+def reject_payment(
+    payment_id: int,
+    reason: str | None = None,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    """
+    Mark payment as Failed if transaction verification fails.
+    """
+    payment = db.get(MembershipPayment, payment_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment record not found.")
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    payment.payment_status = "Failed"
+    payment.updated_at = now
+
+    if reason and payment.application_id:
+        app = db.get(MembershipApplication, payment.application_id)
+        if app:
+            existing_notes = app.admin_notes or ""
+            app.admin_notes = f"{existing_notes}\n[Payment Rejected: {reason}]".strip()
+
+    db.commit()
+    db.refresh(payment)
+
+    return {
+        "success": True,
+        "message": "Payment marked as Failed.",
+        "data": {
+            "payment_id": payment.payment_id,
+            "payment_status": payment.payment_status,
+        },
+    }

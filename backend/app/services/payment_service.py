@@ -24,3 +24,40 @@ def validate_payment_reference(
         application = db.get(MembershipApplication, application_id)
         if not application:
             raise ValueError("Application does not exist.")
+
+
+MEMBERSHIP_FEE_MAP: dict[str, float] = {
+    "life member (faculty)": 5000.0,
+    "life membership (faculty)": 5000.0,
+    "annual member (faculty)": 1000.0,
+    "annual membership (faculty)": 1000.0,
+    "research scholar member": 600.0,
+    "research scholar membership": 600.0,
+    "institutional (university / b-school)": 25000.0,
+    "institutional (college / institute)": 12000.0,
+}
+
+
+def calculate_membership_fee(category: str | None) -> float:
+    """Determine the canonical fee for a membership category server-side."""
+    if not category:
+        raise ValueError("Membership category is required to determine fee.")
+
+    cat_norm = category.strip().lower()
+    if cat_norm in MEMBERSHIP_FEE_MAP:
+        return MEMBERSHIP_FEE_MAP[cat_norm]
+
+    # Keyword fallback matching
+    if "life" in cat_norm:
+        return 5000.0
+    if "annual" in cat_norm:
+        return 1000.0
+    if "research scholar" in cat_norm:
+        return 600.0
+    if "university" in cat_norm or "b-school" in cat_norm:
+        return 25000.0
+    if "college" in cat_norm or "institute" in cat_norm:
+        return 12000.0
+
+    raise ValueError(f"Unsupported membership category: '{category}'")
+
