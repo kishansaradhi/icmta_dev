@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/icmta-2026.css">
+<link rel="icon" type="image/png" href="../assets/images/ICMTA-logo.png">
 <style>
 
 /* Multi-step Application Stepper */
@@ -900,10 +901,13 @@ async function handleMembershipSubmit(e) {
     formData.append('full_name', fullName);
 
     // Date of birth
-    formData.append(
-      'date_of_birth',
-      document.getElementById('mDob').value
-    );
+    let dobVal = (document.getElementById('mDob').value || '').trim();
+    if (dobVal.includes('/')) {
+      const parts = dobVal.split('/');
+      if (parts[0].length === 4) dobVal = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      else if (parts[2].length === 4) dobVal = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+    formData.append('date_of_birth', dobVal);
 
     // Contact
     formData.append(
@@ -1023,11 +1027,15 @@ async function handleMembershipSubmit(e) {
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      throw new Error(
-        result.detail ||
-        result.message ||
-        'Unable to submit membership application.'
-      );
+      let errorMsg = 'Unable to submit membership application.';
+      if (typeof result.detail === 'string') {
+        errorMsg = result.detail;
+      } else if (Array.isArray(result.detail)) {
+        errorMsg = result.detail.map(d => (d.loc ? d.loc.slice(1).join(' ') + ': ' : '') + d.msg).join('; ');
+      } else if (result.message) {
+        errorMsg = result.message;
+      }
+      throw new Error(errorMsg);
     }
 
     console.log('Membership application submitted successfully:', result);
