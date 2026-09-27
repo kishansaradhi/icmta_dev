@@ -172,8 +172,11 @@ async def submit_membership_application(
         row = result.mappings().first()
         db.commit()
 
+        app_id = row["application_id"] if row and "application_id" in row else None
+
         return {
             "success": True,
+            "application_id": app_id,
             "message": "Application submitted successfully and is awaiting admin review.",
             "data": dict(row) if row else None,
         }

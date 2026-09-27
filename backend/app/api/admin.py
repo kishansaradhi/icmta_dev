@@ -4,7 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from sqlalchemy import desc, select
+from sqlalchemy import desc, select, text
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -290,32 +290,31 @@ def approve_membership_application(
     db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin),
 ):
-    application = db.get(MembershipApplication, application_id)
-    if not application:
-        raise HTTPException(status_code=404, detail="Application not found")
-
-    created_new_member = application.member_id is None
-
     try:
-        member = approve_application(db, application, admin.admin_id)
+        result = db.execute(
+            text("CALL sp_approve_membership_application(:p_application_id, :p_admin_id)"),
+            {"p_application_id": application_id, "p_admin_id": admin.admin_id},
+        )
+        row = result.mappings().first()
         db.commit()
-    except ValueError as exc:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc))
-    except Exception:
-        db.rollback()
-        raise
 
-    return {
-        "success": True,
-        "message": "Application approved.",
-        "data": {
-            "application_id": application.application_id,
-            "member_id": member.member_id,
-            "created_new_member": created_new_member,
-            "status": application.approval_status,
-        },
-    }
+        if not row:
+            raise HTTPException(status_code=400, detail="Failed to approve application.")
+
+        return {
+            "success": True,
+            "message": "Application approved successfully.",
+            "data": dict(row),
+        }
+    except Exception as exc:
+        db.rollback()
+        err_msg = str(exc)
+        if "1644 (" in err_msg or "45000" in err_msg:
+            import re
+            match = re.search(r"45000:\s*(.*?)(\[|$|\))", err_msg)
+            if match:
+                err_msg = match.group(1).strip().strip("'\"")
+        raise HTTPException(status_code=400, detail=err_msg)
 
 
 @router.post("/admin/applications/{application_id}/reject")

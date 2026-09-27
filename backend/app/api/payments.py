@@ -22,19 +22,24 @@ router = APIRouter(tags=["Payments"])
 
 
 async def _save_payment_proof(upload: UploadFile) -> str:
-    allowed = {
+    allowed_mimes = {
         "image/jpeg",
         "image/png",
         "image/webp",
         "application/pdf",
     }
-    if upload.content_type not in allowed:
+    if upload.content_type not in allowed_mimes:
         raise HTTPException(
             status_code=400,
             detail="Payment proof must be a JPG, PNG, WEBP, or PDF file.",
         )
 
     content = await upload.read()
+    if len(content) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded payment proof file is empty.",
+        )
     if len(content) > 10 * 1024 * 1024:
         raise HTTPException(
             status_code=400,
@@ -43,8 +48,12 @@ async def _save_payment_proof(upload: UploadFile) -> str:
 
     suffix = Path(upload.filename or "").suffix.lower()
     if suffix not in {".jpg", ".jpeg", ".png", ".webp", ".pdf"}:
-        suffix = ".jpg"
+        raise HTTPException(
+            status_code=400,
+            detail="Payment proof has an unsupported extension. Allowed: .jpg, .jpeg, .png, .webp, .pdf",
+        )
 
+    # Safe unique filename preventing path traversal
     filename = f"proof_{uuid4().hex}{suffix}"
     folder = Path(settings.upload_dir) / "payment_proofs"
     folder.mkdir(parents=True, exist_ok=True)
@@ -183,50 +192,101 @@ def create_payment(
     payload: PaymentCreate,
     db: Session = Depends(get_db),
 ):
-    if payload.amount <= 0:
-        raise HTTPException(status_code=400, detail="Payment amount must be greater than zero.")
+    """
+    Public payment submission endpoint.
+    Payment status is strictly forced to 'Pending' for administrative verification.
+    Amount is validated server-side.
+    """
+    if not payload.application_id:
+        raise HTTPException(status_code=400, detail="application_id is required.")
 
-    if payload.currency.upper() != "INR":
-        raise HTTPException(status_code=400, detail="Current payment flow supports INR.")
-
-    if payload.payment_status not in {"Pending", "Paid", "Failed", "Refunded"}:
-        raise HTTPException(status_code=400, detail="Invalid payment status.")
-
-    if payload.payment_status == "Paid" and payload.paid_at is None:
-        raise HTTPException(status_code=400, detail="paid_at is required for Paid payments.")
-
-    try:
-        validate_payment_reference(
-            db,
-            payload.transaction_id,
-            payload.application_id,
+    application = db.get(MembershipApplication, payload.application_id)
+    if not application:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Membership application #{payload.application_id} was not found.",
         )
+
+    txn_clean = (payload.transaction_id or "").strip()
+    if not txn_clean or len(txn_clean) < 4:
+        raise HTTPException(
+            status_code=400,
+            detail="A valid transaction / UTR reference number is required.",
+        )
+
+    # Server-side canonical fee calculation
+    try:
+        canonical_amount = calculate_membership_fee(application.membership_category)
     except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # Prevent submitting if already Paid
+    existing_paid = db.execute(
+        select(MembershipPayment).where(
+            MembershipPayment.application_id == payload.application_id,
+            MembershipPayment.payment_status == "Paid",
+        )
+    ).scalars().first()
+    if existing_paid:
+        raise HTTPException(
+            status_code=400,
+            detail="This membership application has already been paid and verified.",
+        )
+
+    # Check for duplicate transaction_id across all payments
+    existing_txn = db.execute(
+        select(MembershipPayment).where(
+            MembershipPayment.transaction_id == txn_clean
+        )
+    ).scalars().first()
+    if existing_txn and existing_txn.application_id != payload.application_id:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Transaction ID / UTR '{txn_clean}' has already been submitted for another application.",
+        )
 
     now = datetime.now(timezone.utc).replace(tzinfo=None)
-    payment = MembershipPayment(
-        application_id=payload.application_id,
-        member_id=payload.member_id,
-        membership_category=payload.membership_category,
-        amount=payload.amount,
-        currency=payload.currency.upper(),
-        payment_method=payload.payment_method,
-        payment_gateway=payload.payment_gateway,
-        transaction_id=payload.transaction_id,
-        payment_status=payload.payment_status,
-        paid_at=payload.paid_at,
-        created_at=now,
-        updated_at=now,
-    )
 
-    db.add(payment)
+    # Prevent duplicate payment records on double submission
+    pending_payment = db.execute(
+        select(MembershipPayment).where(
+            MembershipPayment.application_id == payload.application_id,
+            MembershipPayment.payment_status == "Pending",
+        )
+    ).scalars().first()
+
+    if pending_payment:
+        pending_payment.transaction_id = txn_clean
+        pending_payment.payment_method = payload.payment_method or "PhonePe UPI"
+        pending_payment.payment_gateway = payload.payment_gateway or "PhonePe QR"
+        pending_payment.amount = canonical_amount
+        pending_payment.currency = "INR"
+        pending_payment.updated_at = now
+        payment_record = pending_payment
+    else:
+        payment_record = MembershipPayment(
+            application_id=payload.application_id,
+            member_id=application.member_id,
+            membership_category=application.membership_category,
+            amount=canonical_amount,
+            currency="INR",
+            payment_method=payload.payment_method or "PhonePe UPI",
+            payment_gateway=payload.payment_gateway or "PhonePe QR",
+            transaction_id=txn_clean,
+            payment_status="Pending",  # Strictly Pending for public submissions
+            paid_at=None,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(payment_record)
+
     db.commit()
-    db.refresh(payment)
+    db.refresh(payment_record)
 
     return {
         "success": True,
-        "data": PaymentResponse.model_validate(payment).model_dump(mode="json"),
+        "message": "Payment details submitted successfully and are pending verification.",
+        "data": PaymentResponse.model_validate(payment_record).model_dump(mode="json"),
     }
 
 

@@ -586,12 +586,14 @@
           </div>
         </div>
 
+        <div id="submitErrorMsg" style="display:none;width:100%;margin-top:14px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:6px;font-size:13.5px;color:#b91c1c;line-height:1.5;"></div>
+
         <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <button type="button" class="btn secondary" onclick="prevStep(3)" style="padding:11px 24px;">
             &larr; Back
           </button>
           <button type="submit" id="mSubmitBtn" class="btn primary" disabled style="padding:12px 32px;font-size:15px;font-weight:700;opacity:0.55;cursor:not-allowed;">
-            Submit Application &rarr;
+            Submit &amp; Pay &rarr;
           </button>
         </div>
 
@@ -869,7 +871,7 @@ async function handleMembershipSubmit(e) {
   }
 
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Submitting Application...';
+  submitBtn.textContent = 'Submitting & Preparing Payment...';
   submitBtn.style.opacity = '0.55';
 
   try {
@@ -1002,10 +1004,13 @@ async function handleMembershipSubmit(e) {
       formData.append('photo', photoInput.files[0]);
     }
 
-    // Send to FastAPI
-    const apiUrl = window.location.origin.includes('5000') 
-      ? '/api/membership-applications' 
-      : 'http://localhost:5000/api/membership-applications';
+    // API Base URL resolution (handles localhost, custom ports, and production)
+    const apiBase = window.API_BASE_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
+        : ''
+    );
+    const apiUrl = `${apiBase}/api/membership-applications`;
 
     const response = await fetch(
       apiUrl,
@@ -1025,34 +1030,11 @@ async function handleMembershipSubmit(e) {
       );
     }
 
-    console.log('Membership application submitted:', result);
+    console.log('Membership application submitted successfully:', result);
 
-    const applicationId = result.data && result.data.application_id;
-    latestSubmittedAppId = applicationId;
-
-    const feeMap = {
-      'Life Member (Faculty)': '₹ 5,000',
-      'Annual Member (Faculty)': '₹ 1,000',
-      'Research Scholar Member': '₹ 600',
-      'Institutional (University / B-School)': '₹ 25,000',
-      'Institutional (College / Institute)': '₹ 12,000'
-    };
-    const amountStr = feeMap[selectedCategory] || '₹ 5,000';
-
-    // Transition to Application Submitted Screen
-    form.style.display = 'none';
-    const stepperWrapper = document.getElementById('stepperNavWrapper');
-    if (stepperWrapper) stepperWrapper.style.display = 'none';
-
-    const submittedCard = document.getElementById('applicationSubmittedCard');
-    if (submittedCard) {
-      const formattedAppId = 'APL' + String(applicationId).padStart(6, '0') + ` (#${applicationId})`;
-      document.getElementById('submittedAppId').textContent = formattedAppId;
-      document.getElementById('submittedCategory').textContent = selectedCategory;
-      document.getElementById('submittedAmount').textContent = amountStr;
-
-      submittedCard.style.display = 'block';
-      submittedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const applicationId = result.application_id || (result.data && result.data.application_id);
+    if (!applicationId) {
+      throw new Error('Application was saved, but no Application ID was returned by the server.');
     }
 
     try {
@@ -1061,16 +1043,26 @@ async function handleMembershipSubmit(e) {
       sessionStorage.setItem('icmta_last_category', selectedCategory);
     } catch (err) {}
 
+    // Immediately redirect to Payment Page with application_id
+    window.location.href = `payment.html?application_id=${encodeURIComponent(applicationId)}`;
+
   } catch (error) {
 
     console.error('Membership application failed:', error);
-    alert('Application submission failed.\n\n' + error.message);
+    const errBox = document.getElementById('submitErrorMsg');
+    if (errBox) {
+      errBox.textContent = 'Application submission failed: ' + error.message;
+      errBox.style.display = 'block';
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert('Application submission failed.\n\n' + error.message);
+    }
 
   } finally {
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit Application →';
+      submitBtn.textContent = 'Submit & Pay →';
       submitBtn.style.opacity = '1';
       submitBtn.style.cursor = 'pointer';
     }

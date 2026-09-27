@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/icmta-2026.css">
+<script src="../js/api.js"></script>
 
 <style>
 /* Two-Column Responsive Payment Layout */
@@ -413,7 +414,7 @@
               </div>
               <div id="manualSubmitAlert" style="display:none;padding:10px 12px;border-radius:6px;font-size:13px;margin-bottom:12px;"></div>
               <button type="submit" id="btnSubmitPayment" class="btn primary" style="width:100%;padding:11px 18px;font-size:14.5px;font-weight:700;border-radius:6px;background:#5f259f;border-color:#5f259f;">
-                Submit Payment Details &rarr;
+                Final Submit &rarr;
               </button>
             </form>
           </div>
@@ -453,55 +454,67 @@
     </div>
   </div>
 
-  <!-- State 5: PAYMENT SUCCESS SCREEN -->
-  <div id="paymentSuccessView" style="display:none;max-width:680px;margin:20px auto 40px auto;background:#ffffff;border:1px solid #e2e8f0;border-top:5px solid #16a34a;border-radius:14px;box-shadow:0 8px 30px rgba(22,163,74,0.1);padding:36px 32px;text-align:center;">
-    <div style="width:68px;height:68px;border-radius:50%;background:#dcfce7;color:#16a34a;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;font-weight:bold;">
+  <!-- State 5: CONFIRMATION / SUCCESS SCREEN -->
+  <div id="paymentSuccessView" style="display:none;max-width:680px;margin:20px auto 40px auto;background:#ffffff;border:1px solid #e2e8f0;border-top:5px solid #16a34a;border-radius:14px;box-shadow:0 8px 30px rgba(22,163,74,0.08);padding:36px 32px;text-align:center;">
+    <div id="confirmationIconWrap" style="width:68px;height:68px;border-radius:50%;background:#dcfce7;color:#16a34a;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;font-weight:bold;">
       ✓
     </div>
-    <h2 style="font-size:26px;font-weight:800;color:#0f172a;margin:0 0 6px 0;">Payment Verified!</h2>
-    <p style="font-size:15px;color:#475569;margin:0 0 24px 0;">Your membership payment has been verified successfully.</p>
+    <h2 id="confirmationTitle" style="font-size:26px;font-weight:800;color:#0f172a;margin:0 0 6px 0;">Application Submitted Successfully</h2>
+    <p id="confirmationSubtitle" style="font-size:15px;color:#475569;margin:0 0 24px 0;">Your membership application and payment details have been received.</p>
 
-    <!-- Receipt Details Card -->
+    <!-- Details Card -->
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:22px;text-align:left;margin-bottom:24px;">
       <table class="info-table" style="width:100%;">
         <tr>
           <td>Application ID:</td>
-          <td id="successAppId" style="font-weight:800;color:#1e6c93;">—</td>
+          <td id="successAppId" style="font-weight:800;color:#1e6c93;font-size:16px;">—</td>
+        </tr>
+        <tr>
+          <td>Applicant Name:</td>
+          <td id="successApplicantName" style="font-weight:700;color:#0f172a;">—</td>
         </tr>
         <tr>
           <td>Membership Category:</td>
           <td id="successCategory">—</td>
         </tr>
-        <tr style="background:#ecfdf5;">
-          <td style="font-weight:700;color:#065f46;">Amount Paid:</td>
+        <tr style="background:#f0fdf4;">
+          <td style="font-weight:700;color:#166534;">Amount:</td>
           <td id="successAmount" style="font-weight:800;color:#16a34a;font-size:20px;">—</td>
         </tr>
         <tr>
           <td>Transaction ID / UTR:</td>
-          <td id="successTxnId" style="font-family:monospace;font-size:13.5px;color:#0f172a;">—</td>
+          <td id="successTxnId" style="font-family:monospace;font-size:14px;color:#0f172a;font-weight:700;">—</td>
         </tr>
         <tr>
-          <td>Payment Method:</td>
-          <td id="successMethod">—</td>
+          <td>Application Status:</td>
+          <td><span id="successAppStatus" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:#e0f2fe;color:#0369a1;">Submitted / Under Review</span></td>
         </tr>
         <tr>
-          <td>Verification Date:</td>
+          <td>Payment Status:</td>
+          <td><span id="successPayStatus" style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:#fef3c7;color:#92400e;">Pending Verification</span></td>
+        </tr>
+        <tr id="rowSuccessDate">
+          <td>Date:</td>
           <td id="successDate">—</td>
         </tr>
       </table>
     </div>
 
-    <!-- Review Status Note -->
-    <div style="padding:14px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0369a1;font-size:13.5px;margin-bottom:28px;line-height:1.5;">
-      ℹ️ Your application is now under review. You will be notified once it is approved by the ICMTA Secretariat.
+    <!-- Administrative Verification Note -->
+    <div id="confirmationAlertNote" style="padding:16px;background:#fffbeb;border:1px solid #fef3c7;border-left:4px solid #f59e0b;border-radius:8px;color:#92400e;font-size:14px;margin-bottom:28px;line-height:1.6;text-align:left;">
+      <strong>⏳ Pending Administrative Verification:</strong><br>
+      Your application is pending administrative verification. Once your payment details are verified by the ICMTA Secretariat, your membership will be activated and your official Membership ID will be assigned.
     </div>
 
-    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+    <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;align-items:center;">
       <a href="../index.html" class="btn primary" style="padding:12px 30px;font-size:15px;font-weight:700;">
         Back to Home &rarr;
       </a>
       <button type="button" class="btn secondary" onclick="window.print()" style="padding:12px 24px;font-size:15px;">
-        Print Receipt
+        Print Acknowledgement
+      </button>
+      <button type="button" id="btnToggleResubmit" class="btn" onclick="toggleResubmitView()" style="padding:12px 20px;font-size:14px;border:1px solid #cbd5e1;background:#ffffff;color:#475569;border-radius:6px;cursor:pointer;">
+        Edit Payment Reference
       </button>
     </div>
   </div>
@@ -544,9 +557,11 @@ let currentAppData = null;
 
 // Base API URL
 function getApiBaseUrl() {
-  return window.location.origin.includes('5000') 
-    ? '' 
-    : 'http://localhost:5000';
+  if (window.API_BASE_URL) return window.API_BASE_URL;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return window.location.port === '5000' ? '' : 'http://localhost:5000';
+  }
+  return '';
 }
 
 // Load application payment details from backend
@@ -587,25 +602,51 @@ async function loadApplicationPayment(applicationId) {
 function renderApplicationView(data) {
   const loading = document.getElementById('paymentLoadingState');
   const mainView = document.getElementById('paymentMainView');
-  const successView = document.getElementById('paymentSuccessView');
 
   if (loading) loading.style.display = 'none';
 
   // If already paid, show success receipt screen
   if (data.is_paid || data.payment_status === 'Paid') {
-    renderSuccessScreen({
+    renderConfirmationScreen({
       application_id: data.application_id,
+      full_name: data.full_name,
       membership_category: data.membership_category,
-      amount_paid: data.amount,
+      amount: data.amount,
+      currency: data.currency || 'INR',
       transaction_id: data.transaction_id || 'VERIFIED_ON_RECORD',
-      payment_method: data.payment_method || 'PhonePe UPI',
-      paid_at: data.paid_at ? new Date(data.paid_at).toLocaleString('en-IN') : 'Verified'
+      approval_status: data.approval_status,
+      payment_status: 'Paid',
+      is_paid: true,
+      date_str: data.paid_at ? new Date(data.paid_at).toLocaleString('en-IN') : 'Verified'
     });
     return;
   }
 
-  if (mainView) mainView.style.display = 'block';
+  // If payment details already submitted and pending verification, show confirmation screen
+  if (data.payment_status === 'Pending') {
+    renderConfirmationScreen({
+      application_id: data.application_id,
+      full_name: data.full_name,
+      membership_category: data.membership_category,
+      amount: data.amount,
+      currency: data.currency || 'INR',
+      transaction_id: data.transaction_id || 'Submitted',
+      approval_status: data.approval_status,
+      payment_status: 'Pending',
+      is_paid: false,
+      date_str: data.submitted_at ? new Date(data.submitted_at).toLocaleString('en-IN') : new Date().toLocaleString('en-IN')
+    });
+    // Also populate form inputs in case user clicks "Edit Payment Reference"
+    populateFormFields(data);
+    return;
+  }
 
+  // Unpaid or Failed: show payment action view
+  if (mainView) mainView.style.display = 'block';
+  populateFormFields(data);
+}
+
+function populateFormFields(data) {
   const formattedAppId = 'APL' + String(data.application_id).padStart(6, '0') + ` (#${data.application_id})`;
   document.getElementById('summaryAppId').textContent = formattedAppId;
   document.getElementById('summaryApplicantName').textContent = data.full_name || 'N/A';
@@ -626,7 +667,6 @@ function renderApplicationView(data) {
   const unpaidNotice = document.getElementById('unpaidNotice');
   const pendingNotice = document.getElementById('pendingNotice');
   const failedNotice = document.getElementById('failedNotice');
-  const submitBox = document.getElementById('qrSubmissionBox');
 
   if (unpaidNotice) unpaidNotice.style.display = 'none';
   if (pendingNotice) pendingNotice.style.display = 'none';
@@ -649,7 +689,7 @@ function renderApplicationView(data) {
     }
     const btnSubmit = document.getElementById('btnSubmitPayment');
     if (btnSubmit) {
-      btnSubmit.textContent = 'Update Submitted UTR Details →';
+      btnSubmit.textContent = 'Update Payment Reference →';
     }
   } else if (data.payment_status === 'Failed') {
     if (badge) {
@@ -680,12 +720,48 @@ async function submitManualPayment(e) {
 
   const utrVal = utrInput ? utrInput.value.trim() : '';
   if (!utrVal || utrVal.length < 4) {
-    alert('Please enter a valid PhonePe Transaction ID or UTR number.');
+    if (alertEl) {
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#fef2f2';
+      alertEl.style.border = '1px solid #fecaca';
+      alertEl.style.color = '#991b1b';
+      alertEl.textContent = 'Please enter a valid PhonePe Transaction ID or UTR number (at least 4 characters).';
+    } else {
+      alert('Please enter a valid PhonePe Transaction ID or UTR number.');
+    }
     return;
   }
 
+  // Validate proof file if selected
+  if (proofInput && proofInput.files.length > 0) {
+    const file = proofInput.files[0];
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+    const lowerName = file.name.toLowerCase();
+    const hasValidExt = allowedExts.some(ext => lowerName.endsWith(ext));
+    if (!hasValidExt) {
+      if (alertEl) {
+        alertEl.style.display = 'block';
+        alertEl.style.background = '#fef2f2';
+        alertEl.style.border = '1px solid #fecaca';
+        alertEl.style.color = '#991b1b';
+        alertEl.textContent = 'Invalid file format. Allowed types: JPG, PNG, WEBP, PDF.';
+      }
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      if (alertEl) {
+        alertEl.style.display = 'block';
+        alertEl.style.background = '#fef2f2';
+        alertEl.style.border = '1px solid #fecaca';
+        alertEl.style.color = '#991b1b';
+        alertEl.textContent = 'Payment proof file size must be 10 MB or smaller.';
+      }
+      return;
+    }
+  }
+
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Submitting Details...';
+  submitBtn.textContent = 'Submitting Payment Details...';
   if (alertEl) alertEl.style.display = 'none';
 
   try {
@@ -708,16 +784,23 @@ async function submitManualPayment(e) {
       throw new Error(result.detail || result.message || 'Failed to submit payment details.');
     }
 
-    if (alertEl) {
-      alertEl.style.display = 'block';
-      alertEl.style.background = '#ecfdf5';
-      alertEl.style.border = '1px solid #a7f3d0';
-      alertEl.style.color = '#065f46';
-      alertEl.innerHTML = '<strong>Success!</strong> Payment reference recorded. Waiting for admin verification.';
-    }
+    currentAppData.payment_status = 'Pending';
+    currentAppData.transaction_id = utrVal;
+    currentAppData.is_paid = false;
 
-    // Refresh application payment details
-    await loadApplicationPayment(currentAppData.application_id);
+    // Render Confirmation Screen per Part 15
+    renderConfirmationScreen({
+      application_id: currentAppData.application_id,
+      full_name: currentAppData.full_name,
+      membership_category: currentAppData.membership_category,
+      amount: currentAppData.amount,
+      currency: currentAppData.currency || 'INR',
+      transaction_id: utrVal,
+      approval_status: currentAppData.approval_status,
+      payment_status: 'Pending',
+      is_paid: false,
+      date_str: new Date().toLocaleString('en-IN')
+    });
 
   } catch (err) {
     if (alertEl) {
@@ -727,36 +810,96 @@ async function submitManualPayment(e) {
       alertEl.style.color = '#991b1b';
       alertEl.textContent = err.message || 'Error submitting payment details.';
     }
-  } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Submit Payment Details →';
+    submitBtn.textContent = 'Final Submit →';
   }
 }
 
-// Render Payment Success Screen
-function renderSuccessScreen(data) {
+// Render Confirmation Screen
+function renderConfirmationScreen(info) {
   const mainView = document.getElementById('paymentMainView');
   const successView = document.getElementById('paymentSuccessView');
 
   if (mainView) mainView.style.display = 'none';
   if (successView) successView.style.display = 'block';
 
-  const formattedAppId = 'APL' + String(data.application_id).padStart(6, '0') + ` (#${data.application_id})`;
+  const formattedAppId = 'APL' + String(info.application_id).padStart(6, '0') + ` (#${info.application_id})`;
   document.getElementById('successAppId').textContent = formattedAppId;
-  document.getElementById('successCategory').textContent = data.membership_category;
+  document.getElementById('successApplicantName').textContent = info.full_name || (currentAppData ? currentAppData.full_name : '—');
+  document.getElementById('successCategory').textContent = info.membership_category;
 
   const formattedAmount = new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: data.currency || 'INR',
+    currency: info.currency || 'INR',
     maximumFractionDigits: 0
-  }).format(data.amount_paid);
+  }).format(info.amount);
 
   document.getElementById('successAmount').textContent = formattedAmount;
-  document.getElementById('successTxnId').textContent = data.transaction_id || 'N/A';
-  document.getElementById('successMethod').textContent = data.payment_method || 'PhonePe UPI';
-  document.getElementById('successDate').textContent = data.paid_at || new Date().toLocaleString('en-IN');
+  document.getElementById('successTxnId').textContent = info.transaction_id || 'Submitted';
+
+  const appStatusEl = document.getElementById('successAppStatus');
+  const payStatusEl = document.getElementById('successPayStatus');
+  const titleEl = document.getElementById('confirmationTitle');
+  const subtitleEl = document.getElementById('confirmationSubtitle');
+  const noteEl = document.getElementById('confirmationAlertNote');
+  const dateEl = document.getElementById('successDate');
+  const btnToggle = document.getElementById('btnToggleResubmit');
+
+  if (dateEl) {
+    dateEl.textContent = info.date_str || new Date().toLocaleString('en-IN');
+  }
+
+  if (info.is_paid || info.payment_status === 'Paid') {
+    if (titleEl) titleEl.textContent = 'Payment Verified Successfully!';
+    if (subtitleEl) subtitleEl.textContent = 'Your membership payment has been confirmed by the ICMTA Secretariat.';
+    if (payStatusEl) {
+      payStatusEl.textContent = 'Paid & Verified';
+      payStatusEl.style.background = '#dcfce7';
+      payStatusEl.style.color = '#15803d';
+    }
+    if (appStatusEl) {
+      appStatusEl.textContent = info.approval_status || 'Under Review';
+    }
+    if (noteEl) {
+      noteEl.style.background = '#f0fdf4';
+      noteEl.style.borderColor = '#bbf7d0';
+      noteEl.style.borderLeftColor = '#16a34a';
+      noteEl.style.color = '#166534';
+      noteEl.innerHTML = '<strong>✓ Payment Verified:</strong><br>Your payment has been verified. Your application is under final administrative review for membership activation.';
+    }
+    if (btnToggle) btnToggle.style.display = 'none';
+  } else {
+    if (titleEl) titleEl.textContent = 'Application Submitted Successfully';
+    if (subtitleEl) subtitleEl.textContent = 'Your membership application and payment details have been received.';
+    if (payStatusEl) {
+      payStatusEl.textContent = 'Pending Verification';
+      payStatusEl.style.background = '#fef3c7';
+      payStatusEl.style.color = '#92400e';
+    }
+    if (appStatusEl) {
+      appStatusEl.textContent = info.approval_status || 'Submitted / Under Review';
+    }
+    if (noteEl) {
+      noteEl.style.background = '#fffbeb';
+      noteEl.style.borderColor = '#fef3c7';
+      noteEl.style.borderLeftColor = '#f59e0b';
+      noteEl.style.color = '#92400e';
+      noteEl.innerHTML = '<strong>⏳ Pending Administrative Verification:</strong><br>Your application is pending administrative verification. Once your payment details are verified by the ICMTA Secretariat, your membership will be activated and your official Membership ID will be assigned.';
+    }
+    if (btnToggle) btnToggle.style.display = 'inline-block';
+  }
 
   successView.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function toggleResubmitView() {
+  const mainView = document.getElementById('paymentMainView');
+  const successView = document.getElementById('paymentSuccessView');
+  if (mainView && successView) {
+    mainView.style.display = 'block';
+    successView.style.display = 'none';
+    mainView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function loadByManualAppId() {
