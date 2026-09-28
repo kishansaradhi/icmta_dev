@@ -1317,7 +1317,8 @@ function loadMembers(){
 }
 async function loadMembersFromBackend() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/members`);
+        const apiBase = (typeof getApiBase === "function") ? getApiBase() : (typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "http://localhost:5000");
+        const response = await fetch(`${apiBase}/api/members`);
 
         if (!response.ok) {
             throw new Error(`Failed to load members: ${response.status}`);
@@ -1330,12 +1331,10 @@ async function loadMembersFromBackend() {
         }
 
         return result.data.map(member => {
-            const apiBase = (typeof getApiBase === 'function') ? getApiBase() : (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://localhost:5000');
             let photo = member.photo_url || "";
             if (photo && photo.startsWith("/uploads/")) {
                 photo = `${apiBase}${photo}`;
             }
-            const isActive = (member.is_active === true || member.is_active === 1 || String(member.my_status || '').toLowerCase() === 'active');
             return {
                 id: member.member_id,
                 name: member.name,
@@ -1356,8 +1355,8 @@ async function loadMembersFromBackend() {
                 mobile: member.mobile || "",
                 professionalEmail: member.professional_email || member.professionalEmail || "",
                 personalEmail: member.personal_email || member.personalEmail || "",
-                isActive: isActive,
-                status: member.my_status || (isActive ? "Active" : "Inactive")
+                isActive: member.is_active,
+                status: member.my_status
             };
         });
     } catch (error) {

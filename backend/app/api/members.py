@@ -68,9 +68,7 @@ def list_members(
         LEFT JOIN member_academic_profile a
             ON m.member_id = a.member_id
 
-        WHERE 1 = 1
-
-          AND (
+        WHERE (
               :search IS NULL
               OR m.name LIKE :search
               OR m.member_id LIKE :search

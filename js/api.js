@@ -40,8 +40,8 @@ async function loadMembersFromBackend() {
                 mobile: member.mobile || "",
                 professionalEmail: member.professional_email || "",
                 personalEmail: member.personal_email || "",
-                isActive: (member.is_active === true || member.is_active === 1 || String(member.my_status || '').toLowerCase() === 'active'),
-                status: member.my_status || ((member.is_active === true || member.is_active === 1) ? "Active" : "Inactive")
+                isActive: member.is_active,
+                status: member.my_status
             };
         });
 
