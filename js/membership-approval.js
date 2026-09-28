@@ -165,9 +165,13 @@ function renderApplicationsTable(apps) {
     const tr = document.createElement('tr');
     const formattedAppId = 'APL' + String(app.application_id).padStart(6, '0');
 
+    const memberIdCell = (app.approval_status === 'Approved' && app.member_id)
+      ? `<a href="member-profile.html?id=${encodeURIComponent(app.member_id)}" target="_blank" title="View Public Profile" style="color:#0284c7;text-decoration:underline;">${escHtml(app.member_id)} ↗</a>`
+      : (app.member_id ? escHtml(app.member_id) : '<span style="color:#94a3b8;">—</span>');
+
     tr.innerHTML = `
       <td style="font-family:monospace;font-weight:700;color:var(--navy);font-size:13px;">${escHtml(formattedAppId)} <span style="font-size:11px;color:#94a3b8;">(#${app.application_id})</span></td>
-      <td style="font-family:monospace;font-weight:700;color:#0284c7;">${app.member_id ? escHtml(app.member_id) : '<span style="color:#94a3b8;">—</span>'}</td>
+      <td style="font-family:monospace;font-weight:700;color:#0284c7;">${memberIdCell}</td>
       <td style="font-weight:700;color:#0f172a;">${escHtml(app.full_name || '—')}</td>
       <td>${getMemberTypeBadge(app.member_type, app.member_id)}</td>
       <td style="font-size:12.5px;color:#334155;">${escHtml(app.membership_category || '—')}</td>
@@ -275,7 +279,10 @@ function renderReviewDetailView(data) {
           ✓ This membership application was Approved on ${fmtAppDateTime(data.reviewed_at)}.
           ${data.member_id ? `Active Member ID: <span style="font-family:monospace;color:#0284c7;">${escHtml(data.member_id)}</span>` : ''}
         </div>
-        <span class="badge" style="background:#16a34a;color:#fff;padding:6px 14px;font-size:12px;font-weight:700;">Approved</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${data.member_id ? `<a href="member-profile.html?id=${encodeURIComponent(data.member_id)}" target="_blank" class="btn" style="background:#0284c7;border-color:#0284c7;color:#fff;padding:6px 14px;font-size:12.5px;font-weight:700;text-decoration:none;">View Public Profile &rarr;</a>` : ''}
+          <span class="badge" style="background:#16a34a;color:#fff;padding:6px 14px;font-size:12px;font-weight:700;">Approved</span>
+        </div>
       </div>
     `;
   } else {
@@ -527,7 +534,8 @@ async function executeApplicationApproval(appId) {
   try {
     const res = await approveAdminApplication(targetId);
     closeApproveModal();
-    notifyAdmin(`✓ Application approved! Member ID: ${res.data?.member_id || 'Active'}`, 'success');
+    const approvedMid = res.data?.member_id || '';
+    notifyAdmin(`✓ Application approved! Member ${approvedMid} is now ACTIVE in the Public Directory.`, 'success');
     if (_currentReviewAppId === targetId) {
       reviewApplication(targetId);
     }
