@@ -1500,7 +1500,8 @@ const pageTitles={
   add:"Add Member (Manual)",
   profile:"Member Profile",
   memberDetails:"Member Details",
-  users:"User Management"
+  users:"User Management",
+  "membership-applications":"Membership Applications"
 };
 
 function showPage(id,button){
@@ -1509,11 +1510,17 @@ function showPage(id,button){
   if(page) page.classList.add("active");
   if($("title")) $("title").textContent=pageTitles[id]||"ICMTA Faculty Directory";
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  if(button) button.classList.add("active");
+  if(button) {
+    button.classList.add("active");
+  } else {
+    const navBtn = document.querySelector(`.nav button[data-page="${id}"]`);
+    if(navBtn) navBtn.classList.add("active");
+  }
   if(id==="dashboard") updateDashboard();
   if(id==="directory") renderDirectory();
   if(id==="management") renderManagement();
   if(id==="users") renderUsers();
+  if(id==="membership-applications" && typeof loadAdminApplications==="function") loadAdminApplications();
 }
 
 function nextId(){
@@ -2133,6 +2140,8 @@ function updateDashboard(){
   if($("metricPending")) $("metricPending").textContent=pending;
   if($("metricMissingPhotos")) $("metricMissingPhotos").textContent=missingPhotos;
   if($("metricIncomplete")) $("metricIncomplete").textContent=incomplete;
+
+  if (typeof updateAdminApplicationCounters === "function") updateAdminApplicationCounters();
 
   if($("metricScholars")) $("metricScholars").textContent=scholars;
   if($("metricAP")) $("metricAP").textContent=ap;

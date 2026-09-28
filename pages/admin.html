@@ -93,6 +93,7 @@
 <button class="active" data-page="dashboard">Dashboard</button>
 <button data-page="directory">Faculty Directory</button>
 <button data-page="management">Member Management</button>
+<button data-page="membership-applications">Membership Applications <span id="navPendingAppsBadge" class="badge" style="background:#e0f2fe;color:#0369a1;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:6px;display:none;">0</span></button>
 <button data-page="profile">Member Profile</button>
 <button data-page="users">User Management</button>
 <button data-page="event-approvals">Event Approvals</button>
@@ -101,10 +102,11 @@
 <main class="main"><div class="top"><div><h1 id="title">Dashboard</h1><p>Centralized member collection, management, search and visualization</p></div><div style="display:flex;align-items:center;gap:10px"><a href="public-directory.html" class="btn secondary" style="font-size:12px;text-decoration:none">View Public Directory &rarr;</a><div class="role" id="rolePill">Administrator</div></div></div>
 
 <section id="dashboard" class="page active">
-<!-- 1. Top 4 Primary Summary Cards -->
-<div class="cards" style="margin-bottom:16px">
+<!-- 1. Top Primary Summary Cards -->
+<div class="cards" style="margin-bottom:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
 <button class="card dashboard-metric-card" type="button" onclick="openDashboardMetric('total')"><div class="label">Total Members</div><div class="metric" id="metricTotal">0</div></button>
 <button class="card dashboard-metric-card" type="button" onclick="openDashboardMetric('pending')"><div class="label">Pending Members</div><div class="metric" id="metricPending">0</div></button>
+<button class="card dashboard-metric-card" type="button" onclick="showPage('membership-applications')"><div class="label">Pending Applications</div><div class="metric" id="metricPendingApplications" style="color:#0284c7">0</div></button>
 <button class="card dashboard-metric-card" type="button" onclick="openDashboardMetric('missing-photos')"><div class="label">Missing Photos</div><div class="metric" id="metricMissingPhotos" style="color:#d97706">0</div></button>
 <button class="card dashboard-metric-card" type="button" onclick="openDashboardMetric('incomplete')"><div class="label">Incomplete Profiles</div><div class="metric" id="metricIncomplete" style="color:#dc2626">0</div></button>
 </div>
@@ -136,6 +138,9 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <button class="btn primary" type="button" style="justify-content:flex-start;padding:8px 12px;font-size:12px" onclick="showPage('add'); resetAdminForm()">
         <span style="font-size:14px;font-weight:800">+</span> Add New Member
+      </button>
+      <button class="btn primary" type="button" style="justify-content:flex-start;padding:8px 12px;font-size:12px;background:#0284c7;border-color:#0284c7;" onclick="showPage('membership-applications')">
+        📋 Review Applications
       </button>
       <button class="btn secondary" type="button" style="justify-content:flex-start;padding:8px 12px;font-size:12px" onclick="openDashboardMetric('pending')">
         ⏳ Review Pending
@@ -455,6 +460,98 @@
 <table class="table"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Data Entry Access</th><th>Action</th></tr></thead><tbody id="userBody"></tbody></table>
 </div></section>
 
+<section id="membership-applications" class="page">
+  <div class="panel">
+    <!-- Header with Refresh and Counter -->
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div>
+        <h2 style="margin:0">Membership Applications</h2>
+        <div class="subtitle" style="margin-top:5px">Review applicant credentials, verify payments, and approve or reject applications</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span id="appHeaderPendingBadge" class="badge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;font-size:13px;padding:5px 14px;font-weight:700;">0 Pending</span>
+        <button class="btn secondary" type="button" onclick="loadAdminApplications()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Filter Toolbar -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:18px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="appFilterStatus" style="font-size:12.5px;font-weight:700;color:#475569;margin:0;">Status:</label>
+        <select id="appFilterStatus" onchange="loadAdminApplications()" style="font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e1;">
+          <option value="All">All</option>
+          <option value="Pending" selected>Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="appFilterMemberType" style="font-size:12.5px;font-weight:700;color:#475569;margin:0;">Member Type:</label>
+        <select id="appFilterMemberType" onchange="loadAdminApplications()" style="font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e1;">
+          <option value="All">All</option>
+          <option value="New">New Member</option>
+          <option value="Existing">Existing Member</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="appFilterPayment" style="font-size:12.5px;font-weight:700;color:#475569;margin:0;">Payment:</label>
+        <select id="appFilterPayment" onchange="loadAdminApplications()" style="font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid #cbd5e1;">
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid / Verified</option>
+          <option value="Not Submitted">Not Submitted</option>
+        </select>
+      </div>
+
+      <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:6px;">
+        <input type="text" id="appSearchInput" placeholder="Search by name, ID, UTR..." oninput="filterAdminApplicationsLocal()" style="width:100%;box-sizing:border-box;font-size:13px;padding:6px 12px;border-radius:6px;border:1px solid #cbd5e1;">
+      </div>
+    </div>
+
+    <!-- Applications Table Wrap -->
+    <div class="table-wrap" style="overflow-x:auto">
+      <table class="table" id="applicationsTable">
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Member ID</th>
+            <th>Applicant Name</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th>Submitted</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTableBody">
+          <tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">Loading applications...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="applicationsEmptyMessage" style="display:none;padding:28px;text-align:center;color:#64748b;font-style:italic;">
+      No membership applications found matching the selected filters.
+    </div>
+
+    <!-- Review Application Detail View / Drawer (Rendered below table when Review is clicked) -->
+    <div id="appReviewPanel" style="display:none;margin-top:28px;border-top:2px solid #e2e8f0;padding-top:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0;color:var(--navy);font-size:18px;" id="reviewAppHeaderTitle">Application Review</h3>
+          <span style="font-size:12.5px;color:#64748b;" id="reviewAppHeaderSubtitle">Review submitted applicant credentials and payment details</span>
+        </div>
+        <button class="btn secondary" type="button" onclick="closeApplicationReview()">✕ Close Review</button>
+      </div>
+
+      <div id="appReviewDetailsContainer"></div>
+    </div>
+
+  </div>
+</section>
+
 </main>
 </div>
 
@@ -688,15 +785,79 @@
       alert(msg);
     }
   }
+  window.showAdminToast = showAdminToast;
 
 })();
 </script>
 
+
+<!-- Approve Confirmation Modal -->
+<div id="approveConfirmModal" class="login" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.65);z-index:9999;align-items:center;justify-content:center;">
+  <div class="loginbox" style="max-width:520px;width:90%;background:#ffffff;border-radius:12px;padding:26px;box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:#0f172a;margin:0 0 8px 0;font-size:18px;display:flex;align-items:center;gap:8px;">
+      <span style="color:#16a34a;font-size:20px;">✓</span> Approve Membership Application?
+    </h3>
+    <p style="font-size:13.5px;color:#64748b;margin:0 0 16px 0;">Please review the confirmation summary before activating this membership record.</p>
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:18px;font-size:13.5px;line-height:1.6;">
+      <div><strong>Application ID:</strong> <span id="approveModalAppId" style="font-family:monospace;font-weight:700;color:#0284c7;">—</span></div>
+      <div><strong>Applicant:</strong> <span id="approveModalName" style="font-weight:700;color:#0f172a;">—</span></div>
+      <div><strong>Member ID:</strong> <span id="approveModalMemberId" style="font-weight:700;color:#0284c7;">—</span></div>
+      <div id="approveModalTypeNotice" style="margin-top:6px;font-size:12px;padding:6px 10px;border-radius:6px;background:#e0f2fe;color:#0369a1;"></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button type="button" class="btn secondary" onclick="closeApproveModal()">Cancel</button>
+      <button type="button" id="btnConfirmApprove" class="btn primary" style="background:#16a34a;border-color:#16a34a;">Confirm Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Reason Modal -->
+<div id="rejectReasonModal" class="login" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.65);z-index:9999;align-items:center;justify-content:center;">
+  <div class="loginbox" style="max-width:500px;width:90%;background:#ffffff;border-radius:12px;padding:26px;box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:#dc2626;margin:0 0 8px 0;font-size:18px;display:flex;align-items:center;gap:8px;">
+      <span>✕</span> Reject Membership Application
+    </h3>
+    <p style="font-size:13.5px;color:#64748b;margin:0 0 14px 0;">Provide a reason for rejecting this application (will be recorded in application notes).</p>
+
+    <div style="margin-bottom:14px;font-size:13px;color:#334155;">
+      <strong>Application ID:</strong> <span id="rejectModalAppId" style="font-family:monospace;font-weight:700;">—</span> |
+      <strong>Applicant:</strong> <span id="rejectModalName" style="font-weight:700;">—</span>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label for="rejectReasonTextarea" style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Reason for Rejection *</label>
+      <textarea id="rejectReasonTextarea" rows="3" placeholder="e.g. Mismatched transaction reference, incomplete academic profile..." style="width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;"></textarea>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button type="button" class="btn secondary" onclick="closeRejectModal()">Cancel</button>
+      <button type="button" id="btnConfirmReject" class="btn" style="background:#dc2626;border-color:#dc2626;color:#ffffff;">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Proof Preview Modal -->
+<div id="proofPreviewModal" class="login" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.75);z-index:9999;align-items:center;justify-content:center;">
+  <div class="loginbox" style="max-width:700px;width:90%;max-height:90vh;display:flex;flex-direction:column;background:#ffffff;border-radius:12px;padding:22px;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:16px;color:#0f172a;">Payment Proof Attachment</h3>
+      <button type="button" class="btn secondary" style="padding:4px 10px;font-size:13px;" onclick="closeProofModal()">✕ Close</button>
+    </div>
+    <div id="proofPreviewBody" style="flex:1;overflow:auto;text-align:center;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+      <img id="proofPreviewImg" src="" alt="Payment Proof" style="max-width:100%;height:auto;border-radius:4px;display:none;margin:0 auto;">
+      <iframe id="proofPreviewFrame" src="" style="width:100%;height:500px;border:none;display:none;"></iframe>
+      <div id="proofPreviewPlaceholder" style="padding:40px;color:#64748b;display:none;">No payment proof file attached.</div>
+    </div>
+  </div>
+</div>
 
 <div id="toast" class="toast"></div>
 
 <script src="../js/member-data.js"></script>
 <script src="../js/api.js"></script>
 <script src="../js/app.js"></script>
+<script src="../js/membership-approval.js"></script>
 </body></html>
 

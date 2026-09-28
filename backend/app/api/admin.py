@@ -3,7 +3,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlalchemy import desc, select, text
 from sqlalchemy.orm import Session
 
@@ -26,6 +28,10 @@ from app.services.membership_service import approve_application
 from app.services.event_service import approve_event, reject_event
 
 router = APIRouter(tags=["Admin"])
+
+
+class AdminRejectRequest(BaseModel):
+    reason: str | None = None
 
 
 @router.post("/admin/login")
@@ -249,12 +255,50 @@ async def update_member(
     }
 
 
-@router.get("/admin/applications")
-def admin_applications(
-    status: str | None = None,
+@router.get("/admin/metrics")
+def admin_metrics(
     db: Session = Depends(get_db),
     _: AdminUser = Depends(get_current_admin),
 ):
+    total_members = db.execute(text("SELECT COUNT(*) FROM members")).scalar() or 0
+    pending_applications = db.execute(text("SELECT COUNT(*) FROM membership_applications WHERE approval_status = 'Pending'")).scalar() or 0
+    approved_applications = db.execute(text("SELECT COUNT(*) FROM membership_applications WHERE approval_status = 'Approved'")).scalar() or 0
+    pending_payments = db.execute(text("SELECT COUNT(*) FROM membership_payments WHERE payment_status = 'Pending'")).scalar() or 0
+
+    return {
+        "success": True,
+        "data": {
+            "total_members": total_members,
+            "pending_applications": pending_applications,
+            "approved_applications": approved_applications,
+            "pending_payments": pending_payments,
+        }
+    }
+
+
+@router.get("/admin/applications")
+def admin_applications(
+    status: str | None = None,
+    member_type: str | None = None,
+    payment: str | None = None,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    norm_status = status.strip() if status and status.strip() and status.lower() != "all" else None
+    norm_member_type = None
+    if member_type and member_type.strip() and member_type.lower() != "all":
+        norm_member_type = "existing" if "exist" in member_type.lower() else "new"
+    norm_payment = None
+    if payment and payment.strip() and payment.lower() != "all":
+        if "paid" in payment.lower() or "verif" in payment.lower():
+            norm_payment = "Paid"
+        elif "pend" in payment.lower():
+            norm_payment = "Pending"
+        elif "not" in payment.lower():
+            norm_payment = "Not Submitted"
+        elif "fail" in payment.lower():
+            norm_payment = "Failed"
+
     sql = text("""
         SELECT
             ma.application_id,
@@ -281,9 +325,28 @@ def admin_applications(
         LEFT JOIN membership_payments mp
             ON ma.application_id = mp.application_id
         WHERE (:status IS NULL OR ma.approval_status = :status)
+          AND (
+              :member_type IS NULL
+              OR (:member_type = 'existing' AND ma.member_id IS NOT NULL AND TRIM(ma.member_id) <> '')
+              OR (:member_type = 'new' AND (ma.member_id IS NULL OR TRIM(ma.member_id) = ''))
+          )
+          AND (
+              :payment IS NULL
+              OR (:payment = 'Paid' AND mp.payment_status = 'Paid')
+              OR (:payment = 'Pending' AND mp.payment_status = 'Pending')
+              OR (:payment = 'Not Submitted' AND mp.payment_id IS NULL)
+              OR (:payment = 'Failed' AND mp.payment_status = 'Failed')
+          )
         ORDER BY ma.application_id DESC
     """)
-    rows = db.execute(sql, {"status": status}).mappings().all()
+    rows = db.execute(
+        sql,
+        {
+            "status": norm_status,
+            "member_type": norm_member_type,
+            "payment": norm_payment,
+        },
+    ).mappings().all()
 
     import re
     data = []
@@ -295,9 +358,14 @@ def admin_applications(
             if m:
                 payment_proof = m.group(1).strip()
 
+        m_id = r["member_id"].strip() if r["member_id"] and str(r["member_id"]).strip() else None
+        m_type = "Existing Member" if m_id else "New Member"
+        p_status = r["payment_status"] if r["payment_id"] else "Not Submitted"
+
         data.append({
             "application_id": r["application_id"],
-            "member_id": r["member_id"],
+            "member_id": m_id,
+            "member_type": m_type,
             "membership_category": r["membership_category"],
             "full_name": r["full_name"],
             "professional_email": r["professional_email"],
@@ -306,7 +374,7 @@ def admin_applications(
             "photo_url": r["photo_url"],
             "approval_status": r["approval_status"],
             "payment_id": r["payment_id"],
-            "payment_status": r["payment_status"],
+            "payment_status": p_status,
             "transaction_id": r["transaction_id"],
             "amount": float(r["amount"]) if r["amount"] is not None else None,
             "payment_proof": payment_proof,
@@ -322,12 +390,195 @@ def admin_applications(
     }
 
 
+@router.get("/admin/applications/{application_id}")
+def admin_application_detail(
+    application_id: int,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    sql = text("""
+        SELECT
+            ma.application_id,
+            ma.member_id,
+            ma.membership_category,
+            ma.full_name,
+            ma.approval_status,
+            ma.admin_notes,
+            ma.reviewed_by,
+            ma.reviewed_at,
+            ma.created_at,
+            ma.updated_at,
+            ai.academic_title,
+            ai.date_of_birth,
+            ai.highest_qualification,
+            ai.designation,
+            ai.department,
+            ai.institution,
+            ai.college_address,
+            ai.pin_code,
+            ai.state_province,
+            ai.country,
+            ac.personal_email,
+            ac.professional_email,
+            ac.mobile,
+            ac.whatsapp,
+            ac.whatsapp_secondary,
+            ac.photo_url,
+            ac.google_scholar,
+            ac.linkedin,
+            ac.orcid,
+            ac.expertise,
+            ac.research_guideship,
+            mp.payment_id,
+            mp.payment_status,
+            mp.amount,
+            mp.currency,
+            mp.payment_method,
+            mp.payment_gateway,
+            mp.transaction_id,
+            mp.paid_at,
+            mp.created_at AS payment_created_at
+        FROM membership_applications ma
+        LEFT JOIN application_applicant_info ai
+            ON ma.application_id = ai.application_id
+        LEFT JOIN application_contact_info ac
+            ON ma.application_id = ac.application_id
+        LEFT JOIN membership_payments mp
+            ON ma.application_id = mp.application_id
+        WHERE ma.application_id = :application_id
+        LIMIT 1
+    """)
+    row = db.execute(sql, {"application_id": application_id}).mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Application not found.")
+
+    r = dict(row)
+    notes = r.get("admin_notes") or ""
+    payment_proof = None
+    if "[Payment Proof: " in notes:
+        import re
+        m = re.search(r"\[Payment Proof:\s*([^\]]+)\]", notes)
+        if m:
+            payment_proof = m.group(1).strip()
+
+    m_id = r["member_id"].strip() if r["member_id"] and str(r["member_id"]).strip() else None
+    member_type = "Existing Member" if m_id else "New Member"
+
+    existing_member_record = None
+    if m_id:
+        mem = db.execute(
+            text("SELECT member_id, name, designation, institution, department FROM members WHERE UPPER(TRIM(member_id)) = UPPER(:mid)"),
+            {"mid": m_id},
+        ).mappings().first()
+        if mem:
+            existing_member_record = dict(mem)
+
+    return {
+        "success": True,
+        "data": {
+            "application_id": r["application_id"],
+            "member_id": m_id,
+            "member_type": member_type,
+            "membership_category": r["membership_category"],
+            "full_name": r["full_name"],
+            "approval_status": r["approval_status"],
+            "admin_notes": r["admin_notes"],
+            "reviewed_by": r["reviewed_by"],
+            "reviewed_at": r["reviewed_at"].isoformat() if r["reviewed_at"] else None,
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
+            # Applicant details
+            "academic_title": r["academic_title"],
+            "date_of_birth": str(r["date_of_birth"]) if r["date_of_birth"] else None,
+            "highest_qualification": r["highest_qualification"],
+            "designation": r["designation"],
+            "department": r["department"],
+            "institution": r["institution"],
+            "college_address": r["college_address"],
+            "pin_code": r["pin_code"],
+            "state_province": r["state_province"],
+            "country": r["country"] or "India",
+            # Contact details
+            "personal_email": r["personal_email"],
+            "professional_email": r["professional_email"],
+            "mobile": r["mobile"],
+            "whatsapp": r["whatsapp"],
+            "whatsapp_secondary": r["whatsapp_secondary"],
+            "photo_url": r["photo_url"],
+            "google_scholar": r["google_scholar"],
+            "linkedin": r["linkedin"],
+            "orcid": r["orcid"],
+            "expertise": r["expertise"],
+            "research_guideship": r["research_guideship"],
+            # Payment details
+            "payment_id": r["payment_id"],
+            "payment_status": r["payment_status"] or "Not Submitted",
+            "amount": float(r["amount"]) if r["amount"] is not None else None,
+            "currency": r["currency"] or "INR",
+            "payment_method": r["payment_method"],
+            "payment_gateway": r["payment_gateway"],
+            "transaction_id": r["transaction_id"],
+            "paid_at": r["paid_at"].isoformat() if r["paid_at"] else None,
+            "payment_created_at": r["payment_created_at"].isoformat() if r["payment_created_at"] else None,
+            "payment_proof": payment_proof,
+            "existing_member_record": existing_member_record,
+        },
+    }
+
+
+@router.get("/admin/applications/{application_id}/payment-proof")
+def admin_application_payment_proof(
+    application_id: int,
+    db: Session = Depends(get_db),
+    _: AdminUser = Depends(get_current_admin),
+):
+    app = db.get(MembershipApplication, application_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    notes = app.admin_notes or ""
+    import re
+    m = re.search(r"\[Payment Proof:\s*([^\]]+)\]", notes)
+    if not m:
+        raise HTTPException(status_code=404, detail="No payment proof file associated with this application.")
+
+    relative_url = m.group(1).strip()
+    clean_path = relative_url.replace("/uploads/", "")
+    file_path = Path(settings.upload_dir) / clean_path
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Payment proof file not found on disk.")
+
+    return FileResponse(file_path)
+
+
 @router.post("/admin/applications/{application_id}/approve")
 def approve_membership_application(
     application_id: int,
     db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin),
 ):
+    app = db.get(MembershipApplication, application_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Membership application does not exist.")
+    if app.approval_status == "Approved":
+        raise HTTPException(status_code=409, detail="Application has already been approved.")
+    if app.approval_status == "Rejected":
+        raise HTTPException(status_code=400, detail="Rejected application cannot be approved.")
+    if app.approval_status != "Pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Application status is {app.approval_status}. Only pending applications can be approved."
+        )
+
+    # Check payment
+    payment = db.execute(
+        select(MembershipPayment).where(MembershipPayment.application_id == application_id)
+    ).scalars().first()
+    if not payment or payment.payment_status != "Paid":
+        raise HTTPException(
+            status_code=400,
+            detail="Application cannot be approved because payment is not marked as Paid. Please verify the payment first."
+        )
+
     try:
         result = db.execute(
             text("CALL sp_approve_membership_application(:p_application_id, :p_admin_id)"),
@@ -344,6 +595,8 @@ def approve_membership_application(
             "message": "Application approved successfully.",
             "data": dict(row),
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         db.rollback()
         err_msg = str(exc)
@@ -358,28 +611,39 @@ def approve_membership_application(
 @router.post("/admin/applications/{application_id}/reject")
 def reject_membership_application(
     application_id: int,
-    reason: str | None = None,
+    payload: AdminRejectRequest | None = None,
+    reason: str | None = Query(default=None),
     db: Session = Depends(get_db),
     admin: AdminUser = Depends(get_current_admin),
 ):
-    application = db.get(MembershipApplication, application_id)
-    if not application:
-        raise HTTPException(status_code=404, detail="Application not found")
-    if application.approval_status != "Pending":
-        raise HTTPException(status_code=400, detail="Only pending applications can be rejected.")
+    app = db.get(MembershipApplication, application_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    if app.approval_status == "Approved":
+        raise HTTPException(status_code=400, detail="Approved application cannot be rejected.")
+    if app.approval_status != "Pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Only pending applications can be rejected. Current status is {app.approval_status}."
+        )
 
-    application.approval_status = "Rejected"
-    application.reviewed_by = admin.admin_id
-    application.reviewed_at = datetime.now(timezone.utc).replace(tzinfo=None)
-    application.admin_notes = reason
+    reject_reason = (payload.reason if payload and payload.reason else reason) or None
+
+    app.approval_status = "Rejected"
+    app.reviewed_by = admin.admin_id
+    app.reviewed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    existing_notes = app.admin_notes or ""
+    if reject_reason:
+        app.admin_notes = f"{existing_notes}\n[Rejected: {reject_reason}]".strip() if existing_notes else f"[Rejected: {reject_reason}]"
     db.commit()
 
     return {
         "success": True,
         "message": "Application rejected.",
         "data": {
-            "application_id": application.application_id,
-            "status": application.approval_status,
+            "application_id": app.application_id,
+            "status": app.approval_status,
+            "reason": reject_reason,
         },
     }
 
