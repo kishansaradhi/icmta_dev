@@ -68,8 +68,7 @@ def list_members(
         LEFT JOIN member_academic_profile a
             ON m.member_id = a.member_id
 
-        WHERE m.is_active = TRUE
-          AND m.my_status = 'Active'
+        WHERE 1 = 1
 
           AND (
               :search IS NULL

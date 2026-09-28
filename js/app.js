@@ -1329,27 +1329,37 @@ async function loadMembersFromBackend() {
             throw new Error("Invalid members API response");
         }
 
-        return result.data.map(member => ({
-            id: member.member_id,
-            name: member.name,
-            qualification: member.qualification,
-            designation: member.designation,
-            department: member.department,
-            college: member.institution,
-            city: member.city,
-            state: member.state_province,
-            country: member.country,
-            expertise: member.expertise,
-            photo: member.photo_url,
+        return result.data.map(member => {
+            const apiBase = (typeof getApiBase === 'function') ? getApiBase() : (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://localhost:5000');
+            let photo = member.photo_url || "";
+            if (photo && photo.startsWith("/uploads/")) {
+                photo = `${apiBase}${photo}`;
+            }
+            const isActive = (member.is_active === true || member.is_active === 1 || String(member.my_status || '').toLowerCase() === 'active');
+            return {
+                id: member.member_id,
+                name: member.name,
+                academicTitle: member.academic_title || "",
+                qualification: member.qualification || "",
+                designation: member.designation || "",
+                department: member.department || "",
+                college: member.institution || "",
+                city: member.city || "",
+                state: member.state_province || "",
+                country: member.country || "India",
+                expertise: member.expertise || "",
+                photo: photo,
 
-            // Keep these available for existing frontend code
-            guideship: member.guideship || "",
-            researchSupervisor: member.researchSupervisor || "",
-            collegeAddress: member.collegeAddress || "",
-            mobile: member.mobile || "",
-            professionalEmail: member.professionalEmail || "",
-            personalEmail: member.personalEmail || ""
-        }));
+                guideship: member.research_guideship || member.guideship || "",
+                researchSupervisor: member.research_guideship || member.researchSupervisor || "",
+                collegeAddress: member.address || member.collegeAddress || "",
+                mobile: member.mobile || "",
+                professionalEmail: member.professional_email || member.professionalEmail || "",
+                personalEmail: member.personal_email || member.personalEmail || "",
+                isActive: isActive,
+                status: member.my_status || (isActive ? "Active" : "Inactive")
+            };
+        });
     } catch (error) {
         console.error("Backend member loading failed:", error);
         return [];

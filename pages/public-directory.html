@@ -346,6 +346,31 @@ button{cursor:pointer}
   transform:translateY(-1px);
   box-shadow:0 4px 12px rgba(18,107,155,0.25);
 }
+.photo-profile-link.disabled{
+  background:#f1f5f9;
+  color:#94a3b8;
+  cursor:not-allowed;
+  pointer-events:none;
+  border:1px solid #e2e8f0;
+}
+.photo-profile-link.disabled:hover{
+  background:#f1f5f9;
+  color:#94a3b8;
+  transform:none;
+  box-shadow:none;
+}
+.status-badge-inactive{
+  display:inline-block;
+  font-size:10.5px;
+  font-weight:700;
+  color:#64748b;
+  background:#f1f5f9;
+  border:1px solid #cbd5e1;
+  padding:2px 7px;
+  border-radius:4px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+}
 
 /* Table View */
 .table-wrap{
@@ -805,7 +830,7 @@ button{cursor:pointer}
 <script src="../js/api.js"></script>
 <script>
 let currentViewMode = "grid";
-let allMembers = [];
+var allMembers = [];
 
 function esc(value){
   return String(value ?? "").replace(/[&<>"]/g, c=>({
@@ -1019,21 +1044,35 @@ function renderFacultyDirectory(){
         ? `<img class="${b64Class}" src="${m.photo}" alt="${esc(m.name)}" loading="lazy" onerror="handleImgError(this, '${esc(m.name)}', 'card')">`
         : `<div class="avatar-initials">${esc(initials(m.name))}</div>`;
 
+      const isActive = Boolean(m.isActive);
       const profileUrl = `member-profile.html?id=${encodeURIComponent(m.id)}`;
 
+      const avatarWrap = isActive
+        ? `<div class="avatar-wrap" onclick="location.href='${profileUrl}'" title="View ${esc(m.name)}'s Public Profile" style="cursor:pointer">${avatar}</div>`
+        : `<div class="avatar-wrap" title="Inactive Member (Profile unavailable)" style="cursor:default;opacity:0.8">${avatar}</div>`;
+
+      const nameHtml = isActive
+        ? `<a href="${profileUrl}">${esc(m.name || "Member")}</a>`
+        : `<span style="color:var(--navy);font-weight:700;">${esc(m.name || "Member")}</span>`;
+
+      const statusTag = !isActive
+        ? `<div style="margin-top:4px;"><span class="status-badge-inactive">Inactive</span></div>`
+        : '';
+
+      const actionBtn = isActive
+        ? `<a href="${profileUrl}" class="photo-profile-link">View Profile &rarr;</a>`
+        : `<span class="photo-profile-link disabled" title="Profile unavailable for inactive members" aria-disabled="true">Profile Disabled</span>`;
+
       return `
-        <div class="faculty-card">
-          <div class="avatar-wrap" onclick="location.href='${profileUrl}'" title="View ${esc(m.name)}'s Public Profile">
-            ${avatar}
-          </div>
+        <div class="faculty-card" style="${isActive ? '' : 'background:#fafafa;border-color:#e2e8f0;'}">
+          ${avatarWrap}
           <div class="faculty-name-wrap">
             <h3 class="faculty-name" title="${esc(m.name)}">
-              <a href="${profileUrl}">${esc(m.name || "Member")}</a>
+              ${nameHtml}
             </h3>
+            ${statusTag}
           </div>
-          <a href="${profileUrl}" class="photo-profile-link">
-            View Profile &rarr;
-          </a>
+          ${actionBtn}
         </div>
       `;
     }).join("");
@@ -1045,26 +1084,38 @@ function renderFacultyDirectory(){
         ? `<img class="table-avatar ${b64Class}" src="${m.photo}" alt="photo" loading="lazy" onerror="handleImgError(this, '${esc(m.name)}', 'table')">`
         : `<div class="table-avatar-placeholder">${esc(initials(m.name))}</div>`;
 
-      const location = [m.city, m.state].filter(Boolean).join(", ") || m.country || "India";
+      const isActive = Boolean(m.isActive);
       const profileUrl = `member-profile.html?id=${encodeURIComponent(m.id)}`;
+      const location = [m.city, m.state].filter(Boolean).join(", ") || m.country || "India";
+
+      const tableAvatar = isActive
+        ? `<div style="cursor:pointer" onclick="location.href='${profileUrl}'" title="View profile">${avatar}</div>
+           <a href="${profileUrl}" class="photo-profile-link" style="font-size:10px;padding:3px 8px">Profile</a>`
+        : `<div style="cursor:default;opacity:0.8" title="Inactive Member">${avatar}</div>
+           <span class="photo-profile-link disabled" style="font-size:10px;padding:3px 8px" title="Inactive Member">Inactive</span>`;
+
+      const tableName = isActive
+        ? `<a href="${profileUrl}" style="font-weight:700;color:var(--navy)">${esc(m.name)}</a>`
+        : `<span style="font-weight:700;color:#64748b;" title="Inactive Member">${esc(m.name)} <span class="status-badge-inactive" style="margin-left:4px;">Inactive</span></span>`;
+
+      const tableAction = isActive
+        ? `<a href="${profileUrl}" class="btn btn-secondary" style="font-size:12px;padding:6px 12px;text-decoration:none">View Profile</a>`
+        : `<button type="button" class="btn btn-secondary" disabled style="font-size:12px;padding:6px 12px;opacity:0.45;cursor:not-allowed;" title="Profile unavailable for inactive members">Disabled</button>`;
 
       return `
-        <tr>
+        <tr style="${isActive ? '' : 'background:#fcfcfc;'}">
           <td>
             <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-              <div style="cursor:pointer" onclick="location.href='${profileUrl}'" title="View profile">${avatar}</div>
-              <a href="${profileUrl}" class="photo-profile-link" style="font-size:10px;padding:3px 8px">Profile</a>
+              ${tableAvatar}
             </div>
           </td>
           <td><b>${esc(m.id)}</b></td>
-          <td><a href="${profileUrl}" style="font-weight:700;color:var(--navy)">${esc(m.name)}</a></td>
+          <td>${tableName}</td>
           <td>${esc(m.designation || "—")}</td>
           <td>${esc(m.department || "—")}</td>
           <td>${esc(m.college || "—")}</td>
           <td>${esc(location)}</td>
-          <td>
-            <a href="${profileUrl}" class="btn btn-secondary" style="font-size:12px;padding:6px 12px;text-decoration:none">View Profile</a>
-          </td>
+          <td>${tableAction}</td>
         </tr>
       `;
     }).join("");
@@ -1072,6 +1123,11 @@ function renderFacultyDirectory(){
 }
 
 function openProfileModal(id){
+  const m = allMembers.find(x => String(x.id).toUpperCase() === String(id).toUpperCase());
+  if (m && !m.isActive) {
+    alert("Profile is unavailable because this member is currently inactive.");
+    return;
+  }
   window.location.href = `member-profile.html?id=${encodeURIComponent(id)}`;
 }
 
