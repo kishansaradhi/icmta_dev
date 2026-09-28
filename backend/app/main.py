@@ -1,9 +1,11 @@
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.database import get_db
 from app.api import members, admin, membership_applications, payments, events
 
 app = FastAPI(
@@ -38,3 +40,9 @@ def root():
 @app.get("/api/health")
 def health():
     return {"success": True, "status": "healthy"}
+
+
+@app.get("/members/{member_id}")
+def get_member_direct(member_id: str, db: Session = Depends(get_db)):
+    """Direct profile route enforcing the active status check."""
+    return members.get_member(member_id, db)

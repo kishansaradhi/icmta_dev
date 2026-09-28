@@ -374,6 +374,7 @@ a{text-decoration:none;color:inherit}
 </footer>
 
 <script src="../js/member-data.js"></script>
+<script src="../js/api.js"></script>
 <script>
 function esc(v){
   return String(v ?? "").replace(/[&<>"]/g, c=>({
@@ -382,48 +383,68 @@ function esc(v){
 }
 
 function initials(name){
-  const clean = String(name || "").replace(/^(Dr.|Prof.|Mr.|Mrs.|Ms.|Lt.s*Dr.)s+/i, "").trim();
-  const parts = clean.split(/s+/).filter(Boolean);
+  const clean = String(name || "").replace(/^(Dr\.|Prof\.|Mr\.|Mrs\.|Ms\.|Lt\.\s*Dr\.)\s+/i, "").trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
   if(parts.length === 0) return "M";
   if(parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function getFacultyList(){
-  try {
-    const raw = localStorage.getItem("ICMTAFacultyDirectoryMembers_v4");
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(Array.isArray(parsed) && parsed.length > 0){
-        return parsed;
-      }
-    }
-  } catch(e){}
-  return window.ICMTA_MASTER_DATA || [];
-}
+async function loadMemberProfile(){
+  const container = document.getElementById("profileContainer");
+  if (!container) return;
 
-function loadMemberProfile(){
   const params = new URLSearchParams(window.location.search);
   const targetId = (params.get("id") || "").trim().toUpperCase();
 
-  const list = getFacultyList();
-  let member = list.find(m => String(m.id || "").trim().toUpperCase() === targetId);
-
-  if(!member && list.length){
-    member = list[0]; // fallback to first member
-  }
-
-  const container = document.getElementById("profileContainer");
-  if(!member){
+  if(!targetId){
     container.innerHTML = `
       <div class="profile-card" style="text-align:center;padding:48px">
-        <h2>Member Record Not Found</h2>
-        <p style="color:var(--muted);margin:10px 0 20px">The requested member ID could not be located in the directory.</p>
-        <a href="public-directory.html" class="btn btn-primary">Browse All Members &rarr;</a>
+        <h2 style="color:var(--navy);margin-bottom:8px;">No Member Specified</h2>
+        <p style="color:var(--muted);margin:10px 0 20px">Please select an active member from the Member Directory.</p>
+        <a href="public-directory.html" class="btn btn-primary">Browse Member Directory &rarr;</a>
       </div>
     `;
     return;
   }
+
+  container.innerHTML = `
+    <div class="profile-card" style="text-align:center;padding:48px;color:var(--muted);">
+      <div>Loading official member profile for <strong>${esc(targetId)}</strong>...</div>
+    </div>
+  `;
+
+  let member = null;
+  try {
+    if (typeof getMemberProfile === "function") {
+      member = await getMemberProfile(targetId);
+    }
+  } catch(err) {
+    console.warn("Backend profile lookup failed:", err.message);
+  }
+
+  // If member is not found or is not active, enforce security: DO NOT expose inactive data or fall back
+  if(!member){
+    container.innerHTML = `
+      <div class="profile-card" style="text-align:center;padding:48px">
+        <div style="font-size:42px;margin-bottom:12px;">🔒</div>
+        <h2 style="color:#0f172a;margin-bottom:8px;">Member Profile Unavailable</h2>
+        <p style="color:var(--muted);max-width:540px;margin:10px auto 24px;line-height:1.6;">
+          The requested member profile (<strong>${esc(targetId)}</strong>) was not found or is currently not active in the public directory.
+        </p>
+        <a href="public-directory.html" class="btn btn-primary">Browse Active Directory &rarr;</a>
+      </div>
+    `;
+    document.title = "Profile Unavailable — ICMTA Member Directory";
+    return;
+  }
+
+  renderMemberProfileData(member);
+}
+
+function renderMemberProfileData(member){
+  const container = document.getElementById("profileContainer");
+  if (!container) return;
 
   document.title = (member.name || "Member Profile") + " — ICMTA Member Directory";
 
@@ -440,6 +461,32 @@ function loadMemberProfile(){
 
   const guideList = String(member.guideship || member.researchSupervisor || "").split(",").map(x => x.trim()).filter(Boolean);
 
+  const academicLinks = [];
+  if (member.googleScholar) {
+    academicLinks.push(`<a href="${esc(member.googleScholar)}" target="_blank" rel="noopener" style="color:var(--navy);font-weight:600;display:inline-flex;align-items:center;gap:4px;">Google Scholar &rarr;</a>`);
+  }
+  if (member.linkedin) {
+    academicLinks.push(`<a href="${esc(member.linkedin)}" target="_blank" rel="noopener" style="color:var(--navy);font-weight:600;display:inline-flex;align-items:center;gap:4px;">LinkedIn &rarr;</a>`);
+  }
+  if (member.orcid) {
+    academicLinks.push(`<span style="font-family:monospace;color:#334155;">ORCID: ${esc(member.orcid)}</span>`);
+  }
+
+  const contactItems = [];
+  if (member.professionalEmail) {
+    contactItems.push(`<div><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Official Email:</span> <a href="mailto:${esc(member.professionalEmail)}" style="color:var(--blue);font-weight:600;">${esc(member.professionalEmail)}</a></div>`);
+  }
+  if (member.personalEmail && member.personalEmail !== member.professionalEmail) {
+    contactItems.push(`<div><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Email:</span> <a href="mailto:${esc(member.personalEmail)}" style="color:var(--blue);">${esc(member.personalEmail)}</a></div>`);
+  }
+  if (member.mobile) {
+    contactItems.push(`<div><span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;">Mobile:</span> <a href="tel:${esc(member.mobile)}" style="color:var(--text);">${esc(member.mobile)}</a></div>`);
+  }
+
+  const cleanTitle = (member.academicTitle || '').trim();
+  const hasTitleInName = cleanTitle && member.name.toLowerCase().startsWith(cleanTitle.toLowerCase());
+  const displayTitlePrefix = cleanTitle && !hasTitleInName ? cleanTitle + ' ' : '';
+
   container.innerHTML = `
     <div class="profile-card">
       <div class="profile-layout">
@@ -447,9 +494,13 @@ function loadMemberProfile(){
           <div class="profile-photo-box">${avatar}</div>
         </div>
         <div class="profile-details">
-          <span class="id-badge">${esc(member.id)}</span>
-          <h1>${esc(member.name)}</h1>
-          <div class="profile-sub">${esc(member.designation || "Member")} &bull; ${esc(member.qualification || "Academician")}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+            <span class="id-badge">${esc(member.id)}</span>
+            <span style="display:inline-block;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;padding:3px 8px;border-radius:6px;">✓ Active Member</span>
+            ${member.category ? `<span style="display:inline-block;font-size:11px;font-weight:700;color:#1e6c93;background:#eaf5fb;padding:3px 8px;border-radius:6px;">${esc(member.category)}</span>` : ""}
+          </div>
+          <h1>${esc(displayTitlePrefix)}${esc(member.name)}</h1>
+          <div class="profile-sub">${esc(member.designation || "Faculty Member")} &bull; ${esc(member.qualification || "Academician")}</div>
 
           <div class="profile-info-grid">
             <div class="profile-info-item">
@@ -493,6 +544,24 @@ function loadMemberProfile(){
                 </div>
               </div>
             ` : ""}
+
+            ${academicLinks.length ? `
+              <div class="profile-info-item full">
+                <div class="profile-label">Academic Profiles & Research Identifiers</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;font-size:13.5px;">
+                  ${academicLinks.join("")}
+                </div>
+              </div>
+            ` : ""}
+
+            ${contactItems.length ? `
+              <div class="profile-info-item full">
+                <div class="profile-label">Verified Contact Details</div>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;font-size:13.5px;">
+                  ${contactItems.join("")}
+                </div>
+              </div>
+            ` : ""}
           </div>
         </div>
       </div>
@@ -507,12 +576,6 @@ if(document.readyState === "loading"){
 }
 
 window.addEventListener("focus", loadMemberProfile);
-
-window.addEventListener("storage", function(e){
-  if(e.key === "ICMTAFacultyDirectoryMembers_v4"){
-    loadMemberProfile();
-  }
-});
 </script>
 <script src="../js/app.js"></script>
 </body>

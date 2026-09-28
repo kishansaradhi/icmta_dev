@@ -2,7 +2,8 @@ const API_BASE_URL = "http://localhost:5000";
 
 async function loadMembersFromBackend() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/members`);
+        const apiBase = getApiBase();
+        const response = await fetch(`${apiBase}/api/members`);
 
         if (!response.ok) {
             throw new Error(`Failed to load members: ${response.status}`);
@@ -14,31 +15,86 @@ async function loadMembersFromBackend() {
             throw new Error("Invalid members API response");
         }
 
-        return result.data.map(member => ({
-            id: member.member_id,
-            name: member.name,
-            qualification: member.qualification,
-            designation: member.designation,
-            department: member.department,
-            college: member.institution,
-            city: member.city,
-            state: member.state_province,
-            country: member.country,
-            expertise: member.expertise,
-            photo: member.photo_url,
+        return result.data.map(member => {
+            let photo = member.photo_url || "";
+            if (photo && photo.startsWith("/uploads/")) {
+                photo = `${apiBase}${photo}`;
+            }
+            return {
+                id: member.member_id,
+                name: member.name,
+                academicTitle: member.academic_title || "",
+                qualification: member.qualification || "",
+                designation: member.designation || "",
+                department: member.department || "",
+                college: member.institution || "",
+                city: member.city || "",
+                state: member.state_province || "",
+                country: member.country || "India",
+                expertise: member.expertise || "",
+                photo: photo,
 
-            guideship: member.guideship || "",
-            researchSupervisor: member.researchSupervisor || "",
-            collegeAddress: member.collegeAddress || "",
-            mobile: member.mobile || "",
-            professionalEmail: member.professional_email || "",
-            personalEmail: member.personal_email || ""
-        }));
+                guideship: member.research_guideship || member.guideship || "",
+                researchSupervisor: member.research_guideship || member.researchSupervisor || "",
+                collegeAddress: member.address || member.collegeAddress || "",
+                mobile: member.mobile || "",
+                professionalEmail: member.professional_email || "",
+                personalEmail: member.personal_email || "",
+                isActive: member.is_active,
+                status: member.my_status
+            };
+        });
 
     } catch (error) {
         console.error("Backend member loading failed:", error);
         return [];
     }
+}
+
+async function getMemberProfile(memberId) {
+    const apiBase = getApiBase();
+    const cleanId = String(memberId || "").trim();
+    if (!cleanId) {
+        throw new Error("Member ID is required.");
+    }
+    const response = await fetch(`${apiBase}/api/members/${encodeURIComponent(cleanId)}`);
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+        throw new Error(result.detail || "Member profile not available or member is inactive.");
+    }
+    const m = result.data;
+    let photo = m.photo_url || "";
+    if (photo && photo.startsWith("/uploads/")) {
+        photo = `${apiBase}${photo}`;
+    }
+    return {
+        id: m.member_id,
+        name: m.name,
+        academicTitle: m.academic_title || "",
+        category: m.membership_category || "Member",
+        qualification: m.qualification || "",
+        designation: m.designation || "",
+        department: m.department || "",
+        college: m.institution || "",
+        city: m.city || "",
+        state: m.state_province || "",
+        country: m.country || "India",
+        expertise: m.expertise || "",
+        photo: photo,
+        guideship: m.research_guideship || "",
+        researchSupervisor: m.research_guideship || "",
+        collegeAddress: m.address || "",
+        mobile: m.mobile || "",
+        whatsapp: m.whatsapp || "",
+        whatsappSecondary: m.whatsapp_secondary || "",
+        professionalEmail: m.professional_email || "",
+        personalEmail: m.personal_email || "",
+        linkedin: m.linkedin || "",
+        orcid: m.orcid || "",
+        googleScholar: m.google_scholar || "",
+        isActive: m.is_active,
+        status: m.my_status
+    };
 }
 async function adminLogin(user_id, password) {
     const response = await fetch(`${API_BASE_URL}/api/admin/login`, {

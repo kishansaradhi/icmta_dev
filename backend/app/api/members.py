@@ -163,20 +163,21 @@ def get_member(
         LEFT JOIN member_academic_profile a
             ON m.member_id = a.member_id
 
-        WHERE m.member_id = :member_id
+        WHERE UPPER(TRIM(m.member_id)) = UPPER(TRIM(:member_id))
           AND m.is_active = TRUE
           AND m.my_status = 'Active'
     """)
 
+    clean_id = member_id.strip()
     result = db.execute(
         sql,
-        {"member_id": member_id},
+        {"member_id": clean_id},
     ).mappings().first()
 
     if not result:
         raise HTTPException(
             status_code=404,
-            detail="Member not found",
+            detail="Member not found or inactive.",
         )
 
     return {
