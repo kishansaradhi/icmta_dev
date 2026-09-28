@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -17,6 +18,8 @@ from app.services.payment_service import (
     calculate_membership_fee,
     validate_payment_reference,
 )
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(tags=["Payments"])
 
@@ -68,17 +71,21 @@ async def submit_manual_payment(
     application_id: int = Form(...),
     transaction_id: str = Form(...),
     payment_method: str = Form("PhonePe UPI"),
+    client_submission_id: str | None = Form(None),
     proof: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
-    """
-    Applicant submits their PhonePe Transaction ID / UTR number (and optional screenshot proof)
-    after scanning the PhonePe QR code.
-    Backend validates application and fee canonical amount, logging status as 'Pending'
-    for admin review.
-    """
+    req_id = f"pay_req_{uuid4().hex[:8]}"
+    txn_clean = transaction_id.strip()
+
+    logger.info(
+        f"=== [PAYMENT CREATE REQUEST START] req_id={req_id} app_id={application_id} "
+        f"txn='{txn_clean}' sub_id={client_submission_id} ==="
+    )
+
     application = db.get(MembershipApplication, application_id)
     if not application:
+        logger.warning(f"[PAYMENT REJECTED] req_id={req_id} Application #{application_id} not found")
         raise HTTPException(
             status_code=404,
             detail=f"Membership application #{application_id} was not found.",
@@ -168,6 +175,11 @@ async def submit_manual_payment(
 
     db.commit()
     db.refresh(payment_record)
+
+    logger.info(
+        f"=== [PAYMENT CREATE REQUEST END] req_id={req_id} pay_id={payment_record.payment_id} "
+        f"app_id={payment_record.application_id} status={payment_record.payment_status} ==="
+    )
 
     return {
         "success": True,

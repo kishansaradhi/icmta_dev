@@ -255,32 +255,70 @@ def admin_applications(
     db: Session = Depends(get_db),
     _: AdminUser = Depends(get_current_admin),
 ):
-    stmt = select(MembershipApplication).order_by(
-        MembershipApplication.created_at.asc()
-    )
-    if status:
-        stmt = stmt.where(MembershipApplication.approval_status == status)
+    sql = text("""
+        SELECT
+            ma.application_id,
+            ma.member_id,
+            ma.membership_category,
+            ma.full_name,
+            ma.approval_status,
+            ma.admin_notes,
+            ma.reviewed_by,
+            ma.reviewed_at,
+            ma.created_at,
+            ma.updated_at,
+            ac.professional_email,
+            ac.personal_email,
+            ac.mobile,
+            ac.photo_url,
+            mp.payment_id,
+            mp.payment_status,
+            mp.transaction_id,
+            mp.amount
+        FROM membership_applications ma
+        LEFT JOIN application_contact_info ac
+            ON ma.application_id = ac.application_id
+        LEFT JOIN membership_payments mp
+            ON ma.application_id = mp.application_id
+        WHERE (:status IS NULL OR ma.approval_status = :status)
+        ORDER BY ma.application_id DESC
+    """)
+    rows = db.execute(sql, {"status": status}).mappings().all()
 
-    rows = db.execute(stmt).scalars().all()
+    import re
+    data = []
+    for r in rows:
+        notes = r["admin_notes"] or ""
+        payment_proof = None
+        if "[Payment Proof: " in notes:
+            m = re.search(r"\[Payment Proof:\s*([^\]]+)\]", notes)
+            if m:
+                payment_proof = m.group(1).strip()
+
+        data.append({
+            "application_id": r["application_id"],
+            "member_id": r["member_id"],
+            "membership_category": r["membership_category"],
+            "full_name": r["full_name"],
+            "professional_email": r["professional_email"],
+            "personal_email": r["personal_email"],
+            "mobile": r["mobile"],
+            "photo_url": r["photo_url"],
+            "approval_status": r["approval_status"],
+            "payment_id": r["payment_id"],
+            "payment_status": r["payment_status"],
+            "transaction_id": r["transaction_id"],
+            "amount": float(r["amount"]) if r["amount"] is not None else None,
+            "payment_proof": payment_proof,
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            "reviewed_at": r["reviewed_at"].isoformat() if r["reviewed_at"] else None,
+            "admin_notes": notes,
+        })
 
     return {
         "success": True,
-        "data": [
-            {
-                "application_id": r.application_id,
-                "member_id": r.member_id,
-                "membership_category": r.membership_category,
-                "full_name": r.full_name,
-                "professional_email": r.professional_email,
-                "mobile": r.mobile,
-                "approval_status": r.approval_status,
-                "created_at": r.created_at,
-                "reviewed_at": r.reviewed_at,
-                "admin_notes": r.admin_notes,
-            }
-            for r in rows
-        ],
-        "count": len(rows),
+        "data": data,
+        "count": len(data),
     }
 
 

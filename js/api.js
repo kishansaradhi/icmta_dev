@@ -163,3 +163,28 @@ async function uploadMemberPhoto(memberId, file) {
 
     return result.data;
 }
+
+async function verifyExistingMember(memberId, email) {
+    const apiBase = window.API_BASE_URL || (
+        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? (window.location.port === "5000" ? "" : "http://localhost:5000")
+            : ""
+    );
+    const response = await fetch(`${apiBase}/api/members/verify`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            member_id: memberId,
+            email: email
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+        throw new Error(result.detail || "Member not found. Please check your Member ID and registered email.");
+    }
+
+    return result.data;
+}

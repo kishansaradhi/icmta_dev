@@ -306,6 +306,86 @@
   <!-- Online Application Form Container -->
   <div id="apply-section" class="section-block apply-form-container">
     
+    <!-- PART 1: Member Type Selection -->
+    <div class="member-type-selection-box" style="margin-bottom:24px;padding:18px 20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;text-align:center;">
+      <p style="font-size:15px;font-weight:700;color:#1e293b;margin:0 0 12px 0;">Are you an existing ICMT member?</p>
+      <div style="display:inline-flex;gap:8px;background:#e2e8f0;padding:4px;border-radius:30px;">
+        <button type="button" id="btnTypeNew" class="member-type-btn active" onclick="switchMemberFlow('new')" style="padding:9px 24px;border-radius:24px;border:none;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s ease;background:#1e6c93;color:#ffffff;box-shadow:0 2px 6px rgba(30,108,147,0.25);">
+          New Member
+        </button>
+        <button type="button" id="btnTypeExisting" class="member-type-btn" onclick="switchMemberFlow('existing')" style="padding:9px 24px;border-radius:24px;border:none;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s ease;background:transparent;color:#475569;">
+          Existing Member
+        </button>
+      </div>
+    </div>
+
+    <!-- EXISTING MEMBER VERIFICATION SECTION -->
+    <div id="existingMemberVerificationSection" style="display:none;margin-bottom:24px;">
+      
+      <!-- Verification Card -->
+      <div id="emVerificationCard" style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:24px;">
+        <h3 style="color:#1e6c93;font-size:17px;font-weight:700;margin:0 0 6px 0;">Existing Member Verification</h3>
+        <p style="font-size:13.5px;color:#64748b;margin:0 0 18px 0;">
+          Please enter your assigned Member ID and registered email address to verify your profile and load your details into the application form.
+        </p>
+
+        <form id="emVerifyForm" onsubmit="handleExistingMemberVerify(event)">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:18px;">
+            <div class="form-group">
+              <label for="emInputMemberId">Member ID *</label>
+              <input type="text" id="emInputMemberId" required placeholder="e.g. ICMT001" style="text-transform:uppercase;">
+              <span class="form-help">Enter your assigned ICMTA Member ID (e.g. ICMT001).</span>
+            </div>
+            <div class="form-group">
+              <label for="emInputEmail">Registered Email *</label>
+              <input type="email" id="emInputEmail" required placeholder="e.g. your.email@example.com">
+              <span class="form-help">The primary professional or personal email on your profile.</span>
+            </div>
+          </div>
+
+          <div id="emVerifyAlert" style="display:none;margin-top:16px;padding:12px 16px;border-radius:8px;font-size:13.5px;line-height:1.45;"></div>
+
+          <div style="margin-top:18px;display:flex;justify-content:flex-start;">
+            <button type="submit" id="btnVerifyMember" class="btn primary" style="padding:10px 26px;font-size:14px;font-weight:700;">
+              Verify Member
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Verified Success Banner -->
+      <div id="emVerifiedBanner" style="display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px 20px;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#10b981;color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px;flex-shrink:0;">✓</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#065f46;">
+              Existing Member Verified: <span id="emBannerId" style="color:#047857;">—</span> &mdash; <span id="emBannerName">—</span>
+            </div>
+            <div style="font-size:13px;color:#047857;margin-top:2px;">
+              Your saved profile has been loaded into the form below. Please review your details, complete any missing required fields, and proceed with <strong>Submit &amp; Pay</strong>.
+            </div>
+          </div>
+        </div>
+        <div>
+          <button type="button" class="btn secondary" onclick="resetExistingVerification()" style="padding:7px 16px;font-size:12.5px;border-radius:6px;background:#ffffff;">
+            Verify Different Member
+          </button>
+        </div>
+      </div>
+
+      <!-- Prompt before verification -->
+      <div id="emPromptToVerify" style="margin-top:16px;text-align:center;padding:24px 20px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;color:#64748b;">
+        <p style="font-size:15px;font-weight:700;color:#334155;margin:0 0 6px 0;">Existing Member Profile Completion</p>
+        <p style="font-size:13px;margin:0;">
+          Please enter your Member ID and registered email address above and click <strong>Verify Member</strong> to load your membership application form.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- APPLICATION FORM WRAPPER (Used for both New and Existing Member flows) -->
+    <div id="applicationFormWrapper">
+
     <!-- Progress Stepper Indicator -->
     <div class="stepper-wrap" id="stepperNavWrapper">
       <div class="stepper-line-bg">
@@ -339,6 +419,21 @@
         </h3>
         <div class="form-grid">
           
+          <!-- Existing Member ID (Protected / Non-editable) -->
+          <div class="form-group full-col" id="mMemberIdGroup" style="display:none;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:12px 16px;margin-bottom:4px;">
+            <label style="color:#0369a1;font-weight:700;display:flex;align-items:center;gap:6px;">
+              <span>Member ID</span>
+              <span style="font-size:12px;font-weight:600;color:#0284c7;background:#e0f2fe;padding:2px 8px;border-radius:12px;">Protected / Non-Editable</span>
+            </label>
+            <div style="position:relative;display:flex;align-items:center;margin-top:6px;">
+              <input id="mMemberId" type="text" readonly style="background:#ffffff;font-weight:800;font-size:15.5px;color:#1e6c93;border:1.5px solid #7dd3fc;cursor:not-allowed;padding-right:42px;letter-spacing:0.5px;">
+              <span style="position:absolute;right:14px;font-size:18px;" title="Member ID is locked and cannot be changed">🔒</span>
+            </div>
+            <span class="form-help" style="color:#0369a1;font-size:12px;">
+              Your existing Member ID cannot be edited. Submitting this form will update your existing membership record upon admin approval.
+            </span>
+          </div>
+
           <div class="form-group">
             <label>Membership Category *</label>
             <select id="mCategory" required>
@@ -415,7 +510,7 @@
               </div>
               <div style="flex-grow:1">
                 <input id="mPhoto" type="file" accept="image/*" required onchange="handlePhotoPreview(event)">
-                <span class="form-help">Accepted formats: JPG, PNG, WEBP.</span>
+                <span class="form-help" id="photoHelpText">Accepted formats: JPG, PNG, WEBP.</span>
               </div>
             </div>
           </div>
@@ -543,6 +638,10 @@
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:24px;">
           <h4 style="margin:0 0 14px 0;font-size:15px;color:#1e6c93;font-weight:700;">Application Summary</h4>
           <table class="review-summary-table">
+            <tr id="revMemberIdRow" style="display:none;background:#f0f9ff;">
+              <td style="font-weight:700;color:#0369a1;">Member ID:</td>
+              <td id="revMemberId" style="font-weight:800;color:#1e6c93;">—</td>
+            </tr>
             <tr>
               <td>Applicant Name:</td>
               <td id="revName">—</td>
@@ -629,6 +728,9 @@
         </button>
       </div>
     </div>
+
+    </div>
+    <!-- END APPLICATION FORM WRAPPER -->
 
   </div>
 
@@ -835,9 +937,20 @@ function populateReviewSummary() {
   if (document.getElementById('revRole')) document.getElementById('revRole').textContent = `${desig}, ${dept}`;
   if (document.getElementById('revInst')) document.getElementById('revInst').textContent = inst;
   if (document.getElementById('revContact')) document.getElementById('revContact').textContent = `${email} | ${mob}`;
+
+  const revMemRow = document.getElementById('revMemberIdRow');
+  const revMemId = document.getElementById('revMemberId');
+  if (activeMemberFlow === 'existing' && verifiedExistingMemberData && verifiedExistingMemberData.member_id) {
+    if (revMemRow) revMemRow.style.display = 'table-row';
+    if (revMemId) revMemId.textContent = verifiedExistingMemberData.member_id;
+  } else {
+    if (revMemRow) revMemRow.style.display = 'none';
+  }
 }
 
 let latestSubmittedAppId = null;
+let isSubmittingApplication = false;
+let currentApplicationSubmissionId = null;
 
 function goToPaymentPage() {
   if (latestSubmittedAppId) {
@@ -849,6 +962,11 @@ function goToPaymentPage() {
 
 async function handleMembershipSubmit(e) {
   e.preventDefault();
+
+  if (isSubmittingApplication) {
+    console.warn('Application submission already in progress. Ignoring duplicate trigger.');
+    return;
+  }
 
   const form = document.getElementById('membershipForm');
   const consentCheckbox = document.getElementById('mConsentCheckbox');
@@ -871,13 +989,26 @@ async function handleMembershipSubmit(e) {
     consentErrorMsg.style.display = 'none';
   }
 
+  // Lock submission immediately to prevent duplicate requests
+  isSubmittingApplication = true;
   submitBtn.disabled = true;
   submitBtn.textContent = 'Submitting & Preparing Payment...';
   submitBtn.style.opacity = '0.55';
+  submitBtn.style.cursor = 'not-allowed';
+
+  if (!currentApplicationSubmissionId) {
+    currentApplicationSubmissionId = 'sub_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+  }
 
   try {
 
     const formData = new FormData();
+    formData.append('client_submission_id', currentApplicationSubmissionId);
+
+    // If existing member, attach verified member_id
+    if (activeMemberFlow === 'existing' && verifiedExistingMemberData && verifiedExistingMemberData.member_id) {
+      formData.append('member_id', verifiedExistingMemberData.member_id);
+    }
 
     // Membership
     const selectedCategory = document.getElementById('mCategory').value;
@@ -1056,6 +1187,16 @@ async function handleMembershipSubmit(e) {
 
   } catch (error) {
 
+    isSubmittingApplication = false;
+    currentApplicationSubmissionId = null;
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit & Pay →';
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
+    }
+
     console.error('Membership application failed:', error);
     const errBox = document.getElementById('submitErrorMsg');
     if (errBox) {
@@ -1066,16 +1207,371 @@ async function handleMembershipSubmit(e) {
       alert('Application submission failed.\n\n' + error.message);
     }
 
-  } finally {
+  }
+}
 
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit & Pay →';
-      submitBtn.style.opacity = '1';
-      submitBtn.style.cursor = 'pointer';
+/* ============================================================
+   EXISTING MEMBER PROFILE COMPLETION & VERIFICATION LOGIC
+   ============================================================ */
+
+let activeMemberFlow = 'new';
+let verifiedExistingMemberData = null;
+let isVerifyingMember = false;
+
+function cleanVal(v) {
+  if (v === null || v === undefined) return '';
+  const s = String(v).trim();
+  if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined' || s.toLowerCase() === 'none' || s.toLowerCase() === 'nan') {
+    return '';
+  }
+  return s;
+}
+
+function switchMemberFlow(type) {
+  activeMemberFlow = type;
+  const btnNew = document.getElementById('btnTypeNew');
+  const btnExisting = document.getElementById('btnTypeExisting');
+  const verifySection = document.getElementById('existingMemberVerificationSection');
+  const formWrapper = document.getElementById('applicationFormWrapper');
+  const memIdGroup = document.getElementById('mMemberIdGroup');
+  const memIdInput = document.getElementById('mMemberId');
+
+  if (type === 'existing') {
+    if (btnExisting) {
+      btnExisting.style.background = '#1e6c93';
+      btnExisting.style.color = '#ffffff';
+      btnExisting.style.boxShadow = '0 2px 6px rgba(30,108,147,0.25)';
+      btnExisting.classList.add('active');
+    }
+    if (btnNew) {
+      btnNew.style.background = 'transparent';
+      btnNew.style.color = '#475569';
+      btnNew.style.boxShadow = 'none';
+      btnNew.classList.remove('active');
+    }
+    if (verifySection) verifySection.style.display = 'block';
+
+    if (verifiedExistingMemberData) {
+      // Already verified in this session
+      document.getElementById('emVerificationCard').style.display = 'none';
+      document.getElementById('emVerifiedBanner').style.display = 'flex';
+      document.getElementById('emPromptToVerify').style.display = 'none';
+      if (formWrapper) formWrapper.style.display = 'block';
+      if (memIdGroup) memIdGroup.style.display = 'block';
+      if (memIdInput) memIdInput.value = verifiedExistingMemberData.member_id || '';
+    } else {
+      // Must verify first
+      document.getElementById('emVerificationCard').style.display = 'block';
+      document.getElementById('emVerifiedBanner').style.display = 'none';
+      document.getElementById('emPromptToVerify').style.display = 'block';
+      if (formWrapper) formWrapper.style.display = 'none';
+      if (memIdGroup) memIdGroup.style.display = 'none';
+    }
+  } else {
+    // New Member
+    if (btnNew) {
+      btnNew.style.background = '#1e6c93';
+      btnNew.style.color = '#ffffff';
+      btnNew.style.boxShadow = '0 2px 6px rgba(30,108,147,0.25)';
+      btnNew.classList.add('active');
+    }
+    if (btnExisting) {
+      btnExisting.style.background = 'transparent';
+      btnExisting.style.color = '#475569';
+      btnExisting.style.boxShadow = 'none';
+      btnExisting.classList.remove('active');
+    }
+    if (verifySection) verifySection.style.display = 'none';
+    if (formWrapper) formWrapper.style.display = 'block';
+    if (memIdGroup) memIdGroup.style.display = 'none';
+    if (memIdInput) memIdInput.value = '';
+
+    // If previously filled with existing member data, reset form for new member
+    if (verifiedExistingMemberData) {
+      resetFormToBlank();
+    }
+  }
+}
+
+function resetFormToBlank() {
+  verifiedExistingMemberData = null;
+  const form = document.getElementById('membershipForm');
+  if (form) form.reset();
+  resetPhotoPreview();
+  const photoInput = document.getElementById('mPhoto');
+  if (photoInput) photoInput.required = true;
+  const photoHelp = document.getElementById('photoHelpText');
+  if (photoHelp) photoHelp.textContent = 'Accepted formats: JPG, PNG, WEBP.';
+  const countryInput = document.getElementById('mCountry');
+  if (countryInput) countryInput.value = 'India';
+  updateStepperUI(1);
+}
+
+function resetExistingVerification() {
+  verifiedExistingMemberData = null;
+  const verifyCard = document.getElementById('emVerificationCard');
+  const verifiedBanner = document.getElementById('emVerifiedBanner');
+  const promptBox = document.getElementById('emPromptToVerify');
+  const alertEl = document.getElementById('emVerifyAlert');
+  const formWrapper = document.getElementById('applicationFormWrapper');
+
+  if (verifyCard) verifyCard.style.display = 'block';
+  if (verifiedBanner) verifiedBanner.style.display = 'none';
+  if (promptBox) promptBox.style.display = 'block';
+  if (alertEl) alertEl.style.display = 'none';
+  if (formWrapper) formWrapper.style.display = 'none';
+
+  resetFormToBlank();
+}
+
+async function handleExistingMemberVerify(e) {
+  e.preventDefault();
+  if (isVerifyingMember) return;
+
+  const memberIdInput = document.getElementById('emInputMemberId');
+  const emailInput = document.getElementById('emInputEmail');
+  const alertEl = document.getElementById('emVerifyAlert');
+  const btn = document.getElementById('btnVerifyMember');
+
+  const memberId = (memberIdInput ? memberIdInput.value : '').trim();
+  const email = (emailInput ? emailInput.value : '').trim();
+
+  if (!memberId || !email) {
+    if (alertEl) {
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#fef2f2';
+      alertEl.style.border = '1px solid #fecaca';
+      alertEl.style.color = '#991b1b';
+      alertEl.textContent = 'Please enter both Member ID and registered email.';
+    }
+    return;
+  }
+
+  isVerifyingMember = true;
+  btn.disabled = true;
+  btn.textContent = 'Verifying member...';
+  if (alertEl) alertEl.style.display = 'none';
+
+  try {
+    const apiBase = window.API_BASE_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
+        : ''
+    );
+    const response = await fetch(`${apiBase}/api/members/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        member_id: memberId,
+        email: email
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      const errText = result.detail || 'Member not found. Please check your Member ID and registered email.';
+      throw new Error(errText);
     }
 
+    verifiedExistingMemberData = result.data;
+
+    // Update verified banner
+    const bannerId = document.getElementById('emBannerId');
+    const bannerName = document.getElementById('emBannerName');
+    if (bannerId) bannerId.textContent = verifiedExistingMemberData.member_id || memberId;
+    if (bannerName) bannerName.textContent = verifiedExistingMemberData.name || '';
+
+    // Switch UI to verified state
+    document.getElementById('emVerificationCard').style.display = 'none';
+    document.getElementById('emVerifiedBanner').style.display = 'flex';
+    document.getElementById('emPromptToVerify').style.display = 'none';
+
+    // Show application form wrapper
+    const formWrapper = document.getElementById('applicationFormWrapper');
+    if (formWrapper) formWrapper.style.display = 'block';
+
+    // Populate form with existing member data
+    populateFormWithExistingMember(verifiedExistingMemberData);
+
+    // Reset stepper to Step 1 and scroll smoothly
+    updateStepperUI(1);
+    const formSec = document.getElementById('applicationFormWrapper');
+    if (formSec) formSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    if (alertEl) {
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#fef2f2';
+      alertEl.style.border = '1px solid #fecaca';
+      alertEl.style.color = '#991b1b';
+      alertEl.textContent = err.message || 'Member not found. Please check your Member ID and registered email.';
+    }
+  } finally {
+    isVerifyingMember = false;
+    btn.disabled = false;
+    btn.textContent = 'Verify Member';
   }
+}
+
+function populateFormWithExistingMember(data) {
+  // Member ID (Locked)
+  const memIdInput = document.getElementById('mMemberId');
+  if (memIdInput) memIdInput.value = cleanVal(data.member_id);
+  const memIdGroup = document.getElementById('mMemberIdGroup');
+  if (memIdGroup) memIdGroup.style.display = 'block';
+
+  // Membership Category
+  const catVal = cleanVal(data.current_membership_category);
+  if (catVal) {
+    const selCat = document.getElementById('mCategory');
+    if (selCat) {
+      for (let i = 0; i < selCat.options.length; i++) {
+        if (selCat.options[i].value.toLowerCase().includes(catVal.toLowerCase()) || catVal.toLowerCase().includes(selCat.options[i].value.toLowerCase())) {
+          selCat.selectedIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  // Academic Title & Full Name parsing
+  let titleVal = cleanVal(data.academic_title);
+  let rawName = cleanVal(data.name);
+
+  const titlePrefixes = ['dr.', 'dr', 'prof.', 'prof', 'mr.', 'mr', 'mrs.', 'mrs', 'ms.', 'ms'];
+  let parts = rawName.split(/\s+/).filter(Boolean);
+  if (parts.length > 0 && titlePrefixes.includes(parts[0].toLowerCase())) {
+    const prefix = parts[0].toLowerCase().replace('.', '');
+    if (!titleVal) {
+      if (prefix === 'dr') titleVal = 'Dr.';
+      else if (prefix === 'prof') titleVal = 'Prof.';
+      else if (prefix === 'mr') titleVal = 'Mr.';
+      else if (prefix === 'mrs') titleVal = 'Mrs.';
+      else if (prefix === 'ms') titleVal = 'Ms.';
+    }
+    parts.shift();
+  }
+
+  const selTitle = document.getElementById('mTitle');
+  if (selTitle && titleVal) {
+    for (let opt of selTitle.options) {
+      if (opt.value.toLowerCase().replace('.', '') === titleVal.toLowerCase().replace('.', '')) {
+        selTitle.value = opt.value;
+        break;
+      }
+    }
+  }
+
+  const fnInput = document.getElementById('mFirstName');
+  const mnInput = document.getElementById('mMiddleName');
+  const lnInput = document.getElementById('mLastName');
+
+  if (parts.length === 1) {
+    if (fnInput) fnInput.value = parts[0];
+    if (mnInput) mnInput.value = '';
+    if (lnInput) lnInput.value = '';
+  } else if (parts.length === 2) {
+    if (fnInput) fnInput.value = parts[0];
+    if (mnInput) mnInput.value = '';
+    if (lnInput) lnInput.value = parts[1];
+  } else if (parts.length >= 3) {
+    if (fnInput) fnInput.value = parts[0];
+    if (mnInput) mnInput.value = parts.slice(1, -1).join(' ');
+    if (lnInput) lnInput.value = parts[parts.length - 1];
+  } else {
+    if (fnInput) fnInput.value = '';
+    if (mnInput) mnInput.value = '';
+    if (lnInput) lnInput.value = '';
+  }
+
+  // Date of Birth
+  const dobInput = document.getElementById('mDob');
+  if (dobInput) dobInput.value = cleanVal(data.date_of_birth);
+
+  // Email & Contact
+  const pEmailInput = document.getElementById('mPersonalEmail');
+  if (pEmailInput) pEmailInput.value = cleanVal(data.personal_email);
+
+  const proEmailInput = document.getElementById('mEmail');
+  if (proEmailInput) proEmailInput.value = cleanVal(data.professional_email || data.registered_email);
+
+  const mobileInput = document.getElementById('mMobile');
+  if (mobileInput) mobileInput.value = cleanVal(data.mobile);
+
+  const waInput = document.getElementById('mWhatsapp');
+  if (waInput) waInput.value = cleanVal(data.whatsapp || data.mobile);
+
+  const wa2Input = document.getElementById('mWhatsapp2');
+  if (wa2Input) wa2Input.value = cleanVal(data.whatsapp_secondary);
+
+  // Photo handling
+  const photoUrl = cleanVal(data.photo_url);
+  const photoInput = document.getElementById('mPhoto');
+  const photoImg = document.getElementById('photoPreviewImg');
+  const photoPlaceholder = document.getElementById('photoPlaceholder');
+  const photoHelp = document.getElementById('photoHelpText');
+
+  if (photoUrl) {
+    if (photoImg) {
+      photoImg.src = photoUrl;
+      photoImg.style.display = 'block';
+    }
+    if (photoPlaceholder) photoPlaceholder.style.display = 'none';
+    if (photoInput) photoInput.required = false;
+    if (photoHelp) photoHelp.textContent = 'Existing photo on file. Upload a new photo only if you wish to change it.';
+  } else {
+    if (photoImg) {
+      photoImg.src = '';
+      photoImg.style.display = 'none';
+    }
+    if (photoPlaceholder) photoPlaceholder.style.display = 'block';
+    if (photoInput) photoInput.required = true;
+    if (photoHelp) photoHelp.textContent = 'Accepted formats: JPG, PNG, WEBP.';
+  }
+
+  // Step 2: Academic & Institutional Details
+  const qualInput = document.getElementById('mQual');
+  if (qualInput) qualInput.value = cleanVal(data.qualification);
+
+  const desigInput = document.getElementById('mDesig');
+  if (desigInput) desigInput.value = cleanVal(data.designation);
+
+  const deptInput = document.getElementById('mDept');
+  if (deptInput) deptInput.value = cleanVal(data.department);
+
+  const collegeInput = document.getElementById('mCollege');
+  if (collegeInput) collegeInput.value = cleanVal(data.institution);
+
+  const addrInput = document.getElementById('mCollegeAddress');
+  if (addrInput) addrInput.value = cleanVal(data.address);
+
+  const pinInput = document.getElementById('mPincode');
+  if (pinInput) pinInput.value = cleanVal(data.pin_code);
+
+  const stateInput = document.getElementById('mState');
+  if (stateInput) stateInput.value = cleanVal(data.state_province);
+
+  const countryInput = document.getElementById('mCountry');
+  if (countryInput) countryInput.value = cleanVal(data.country) || 'India';
+
+  // Step 3: Professional Profiles & Research
+  const scholarInput = document.getElementById('mScholar');
+  if (scholarInput) scholarInput.value = cleanVal(data.google_scholar);
+
+  const linkedinInput = document.getElementById('mLinkedin');
+  if (linkedinInput) linkedinInput.value = cleanVal(data.linkedin);
+
+  const orcidInput = document.getElementById('mOrcid');
+  if (orcidInput) orcidInput.value = cleanVal(data.orcid);
+
+  const expInput = document.getElementById('mExpertise');
+  if (expInput) expInput.value = cleanVal(data.expertise);
+
+  const guideInput = document.getElementById('mGuideship');
+  if (guideInput) guideInput.value = cleanVal(data.research_guideship);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1085,6 +1581,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const planParam = urlParams.get('category') || urlParams.get('plan');
   if (planParam) {
     selectPlan(planParam);
+  }
+
+  // Check if existing member flow requested via URL (e.g. ?type=existing)
+  if (urlParams.get('type') === 'existing') {
+    switchMemberFlow('existing');
   }
 
   const form = document.getElementById('membershipForm');

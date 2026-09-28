@@ -301,6 +301,10 @@
               <td>Application ID:</td>
               <td id="summaryAppId" style="font-size:15.5px;color:#1e6c93;font-weight:700;">—</td>
             </tr>
+            <tr id="summaryMemberIdRow" style="display:none;">
+              <td>Member ID:</td>
+              <td id="summaryMemberId" style="font-weight:700;color:#1e6c93;">—</td>
+            </tr>
             <tr>
               <td>Applicant Name:</td>
               <td id="summaryApplicantName">—</td>
@@ -470,6 +474,10 @@
           <td>Application ID:</td>
           <td id="successAppId" style="font-weight:800;color:#1e6c93;font-size:16px;">—</td>
         </tr>
+        <tr id="rowSuccessMemberId" style="display:none;">
+          <td>Member ID:</td>
+          <td id="successMemberId" style="font-weight:800;color:#1e6c93;font-size:15px;">—</td>
+        </tr>
         <tr>
           <td>Applicant Name:</td>
           <td id="successApplicantName" style="font-weight:700;color:#0f172a;">—</td>
@@ -610,6 +618,7 @@ function renderApplicationView(data) {
   if (data.is_paid || data.payment_status === 'Paid') {
     renderConfirmationScreen({
       application_id: data.application_id,
+      member_id: data.member_id,
       full_name: data.full_name,
       membership_category: data.membership_category,
       amount: data.amount,
@@ -627,6 +636,7 @@ function renderApplicationView(data) {
   if (data.payment_status === 'Pending') {
     renderConfirmationScreen({
       application_id: data.application_id,
+      member_id: data.member_id,
       full_name: data.full_name,
       membership_category: data.membership_category,
       amount: data.amount,
@@ -650,6 +660,16 @@ function renderApplicationView(data) {
 function populateFormFields(data) {
   const formattedAppId = 'APL' + String(data.application_id).padStart(6, '0') + ` (#${data.application_id})`;
   document.getElementById('summaryAppId').textContent = formattedAppId;
+
+  const memberIdRow = document.getElementById('summaryMemberIdRow');
+  const memberIdEl = document.getElementById('summaryMemberId');
+  if (data.member_id) {
+    if (memberIdRow) memberIdRow.style.display = '';
+    if (memberIdEl) memberIdEl.textContent = data.member_id;
+  } else {
+    if (memberIdRow) memberIdRow.style.display = 'none';
+  }
+
   document.getElementById('summaryApplicantName').textContent = data.full_name || 'N/A';
   document.getElementById('summaryCategory').textContent = data.membership_category || 'N/A';
 
@@ -709,10 +729,17 @@ function populateFormFields(data) {
   }
 }
 
+let isSubmittingPayment = false;
+
 // Handle manual PhonePe UTR submission
 async function submitManualPayment(e) {
   e.preventDefault();
   if (!currentAppData) return;
+
+  if (isSubmittingPayment) {
+    console.warn('Payment submission already in progress. Ignoring duplicate trigger.');
+    return;
+  }
 
   const utrInput = document.getElementById('inputUtr');
   const proofInput = document.getElementById('inputProof');
@@ -732,6 +759,8 @@ async function submitManualPayment(e) {
     }
     return;
   }
+
+  isSubmittingPayment = true;
 
   // Validate proof file if selected
   if (proofInput && proofInput.files.length > 0) {
@@ -811,6 +840,7 @@ async function submitManualPayment(e) {
       alertEl.style.color = '#991b1b';
       alertEl.textContent = err.message || 'Error submitting payment details.';
     }
+    isSubmittingPayment = false;
     submitBtn.disabled = false;
     submitBtn.textContent = 'Final Submit →';
   }
@@ -826,6 +856,17 @@ function renderConfirmationScreen(info) {
 
   const formattedAppId = 'APL' + String(info.application_id).padStart(6, '0') + ` (#${info.application_id})`;
   document.getElementById('successAppId').textContent = formattedAppId;
+
+  const rowMemberId = document.getElementById('rowSuccessMemberId');
+  const elMemberId = document.getElementById('successMemberId');
+  const mid = info.member_id || (currentAppData ? currentAppData.member_id : null);
+  if (mid) {
+    if (rowMemberId) rowMemberId.style.display = '';
+    if (elMemberId) elMemberId.textContent = mid;
+  } else {
+    if (rowMemberId) rowMemberId.style.display = 'none';
+  }
+
   document.getElementById('successApplicantName').textContent = info.full_name || (currentAppData ? currentAppData.full_name : '—');
   document.getElementById('successCategory').textContent = info.membership_category;
 
