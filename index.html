@@ -66,17 +66,19 @@
       <span class="icm-navitem">
         <a href="pages/membership.html" class="nav-item">Membership <i class="icm-caret">&#9662;</i></a>
         <div class="icm-dd">
-          <a href="pages/membership.html">Membership</a>
-          <a href="pages/membership-application.html">Apply for Membership</a>
+          <a href="pages/membership.html#why">Why Join</a>
+          <a href="pages/membership.html#categories">Categories &amp; Fees</a>
+          <a href="pages/membership.html#apply-section">How to Apply</a>
         </div>
+        
       </span>      
-      <span class="icm-sitesearch" style="position:relative">
-        <button class="icm-ss-btn" aria-label="Search the site" onclick="this.parentNode.classList.toggle('icm-open');var i=this.parentNode.querySelector('input');if(this.parentNode.classList.contains('icm-open')){i.focus();}else{var r=document.getElementById('headerSearchResults');if(r)r.style.display='none';}">&#8981;</button>
-        <form class="icm-ss-form" id="headerSearchForm" action="#" method="get" onsubmit="event.preventDefault()">
-          <input type="search" id="headerSearchInput" name="q" placeholder="Search the site…" aria-label="Search the site" autocomplete="off">
+      <span class="icm-sitesearch">
+        <button class="icm-ss-btn" aria-label="Search the site" onclick="this.parentNode.classList.toggle('icm-open');var i=this.parentNode.querySelector('input');if(this.parentNode.classList.contains('icm-open'))i.focus()">&#8981;</button>
+        <form class="icm-ss-form" action="pages/public-directory.html" method="get">
+          <input type="search" name="q" placeholder="Search the site…" aria-label="Search the site">
         </form>
-        <div id="headerSearchResults" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:min(440px,92vw);max-height:480px;overflow-y:auto;background:#eeeff3;border:1px solid #d9e6ed;border-top:3px solid #c49b4b;border-radius:6px;box-shadow:0 14px 35px rgba(19,38,48,0.22);z-index:9999;text-align:left;font-family:inherit;"></div>
       </span>
+      <span class="icm-authslot" data-icm-authslot data-icm-base=""></span>
     </nav>
   </div>
 </header>
@@ -115,30 +117,99 @@
         <span class="icm-sp-go">Submit an abstract &rarr;</span>
       </a>
       <a class="icm-sp-card" href="pages/events.html#upcoming">
-        <span class="icm-sp-when">12 September &middot; Free</span>
-        <b>Webinar: The Art of Voice Modulation</b>
+        <span class="icm-sp-when">30th September 2026 &middot; Free</span>
+        <b>Empowering Educators with Future Skills</b>
         <span class="icm-sp-go">Register &rarr;</span>
       </a>
     </div>
   </div>
 </div>
 
-<!-- 3. WHAT'S HAPPENING -->
+
+<!-- 3. LATEST PUBLICATION -->
+<section class="icm-section" style="padding-top: 34px; padding-bottom: 34px;">
+  <div class="icm-wrap">
+
+    <div style="
+      background: #004d66;
+      border: 1px solid #d9e3e8;
+      border-left: 4px solid #c89b3c;
+      border-radius: 10px;
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    ">
+
+      <div>
+        <span class="icm-sp-label">Latest Publication</span>
+
+        <h2 style="
+          margin: 8px 0 6px;
+          color: #f5f6f7;
+          font-size: 24px;
+        ">
+          ICMTA Monthly Newsletter
+        </h2>
+
+        <p style="
+          margin: 0;
+          color: #c7ced2;
+          font-size: 15px;
+        ">
+          Connecting Ideas. Celebrating Scholarship. Strengthening the Academic Community.
+        </p>
+      </div>
+
+      <a
+        href="assets/documents/ICMTA Monthly Newsletter.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="icm-sp-go"
+        style="
+          white-space: nowrap;
+          border: 1px solid #c89b3c;
+          border-radius: 6px;
+          padding: 10px 18px;
+          text-decoration: none;
+        "
+      >
+        Read the Newsletter &rarr;
+      </a>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- 3. CURRENT EVENTS -->
 <section class="icm-section icm-happening">
   <div class="icm-wrap">
     <div class="icm-sec-head">
       <p class="icm-eyebrow">Events</p>
-      <h2 class="icm-h2">What's happening</h2>
+      <h2 class="icm-h2">Current Events</h2>
       <p>Open to members and to the wider academic community.</p>
     </div>
 
     <div class="icm-ev-grid">
       <article class="icm-ev">
-        <div class="icm-ev-date"><b>12</b><span>Sep 2026</span></div>
+        <div class="icm-ev-date"><b>16</b><span>Oct 2026</span></div>
         <div class="icm-ev-body">
-          <span class="icm-ev-tag">Online webinar &middot; Free</span>
-          <h3>The Art of Voice Modulation for Effective Communication</h3>
-          <p>Dr. Prashanth S — Principal, SRN Adarsh College, and Radio Jockey, Rainbow FM Bengaluru. 7:00–8:00 PM. E-certificate for all participants.</p>
+          <span class="icm-ev-tag">Student Workshop &middot; Free</span>
+          <h3>Communication &amp; Etiquettes (Basic Level)</h3>
+          <p>ICMTA in association with Shri Gnanambica Degree College Autonomous. Resource Person: Brahma Mahesh K (Consultant, HCLTech). 2:00 PM–4:00 PM on Zoom. Free registration &amp; E-Certificate.</p>
+          <a class="icm-ev-go" href="pages/events.html#communication-etiquettes-workshop-2026">Details &amp; registration &rarr;</a>
+        </div>
+      </article>
+
+      <article class="icm-ev">
+        <div class="icm-ev-date"><b>30</b><span>Sep 2026</span></div>
+        <div class="icm-ev-body">
+          <span class="icm-ev-tag">Online Faculty Development Programme &middot; Free</span>
+          <h3>Empowering Educators with Future Skills</h3>
+          <p>Indian Commerce and Management Teachers Association (ICMTA) in Association with Sri Krishnadevaraya University, Anantapuram - 515003, Andhra Pradesh. 10:00 AM–5:00 PM. E-certificate for all participants.</p>
           <a class="icm-ev-go" href="pages/events.html#upcoming">Details &amp; registration &rarr;</a>
         </div>
       </article>
@@ -214,7 +285,7 @@
       <p>Full directory access, member rates at events, and a listing of your own.</p>
     </div>
     <div class="icm-join-btns">
-      <a class="icm-btn-gold" href="pages/membership-application.html">Apply for membership</a>
+      <a class="icm-btn-gold" href="pages/membership.html#apply-section">Apply for membership</a>
       <a class="icm-btn-ghost" href="pages/membership.html#categories">Membership categories</a>
     </div>
   </div>
@@ -233,7 +304,7 @@
       <h4>Quick links</h4>
       <a href="pages/public-directory.html">Member Directory</a>
       <a href="pages/events.html">Events</a>
-      <a href="pages/membership-application.html">Become a Member</a>
+      <a href="pages/membership.html#apply-section">Become a Member</a>
       <a href="pages/resources.html">ICMTA Resources</a>
       <a href="pages/contact.html">Contact</a>
     </div>
@@ -265,6 +336,8 @@
   </div>
 </footer>
 
+<script src="js/member-photo-map.js"></script>
 <script src="js/app.js"></script>
+<script src="js/auth.js"></script>
 </body>
 </html>

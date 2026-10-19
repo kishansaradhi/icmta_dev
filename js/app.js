@@ -1078,7 +1078,7 @@ async function deleteMember(id){
   }
   const confirmed = confirm("Are you sure you want to permanently delete member " + member.id + " (" + member.name + ")?");
   if(!confirmed) return;
-  const token = localStorage.getItem("icmtAdminToken");
+const token = localStorage.getItem("ICMTAdminToken");
   if(!token){
     alert("Admin session expired. Please log in again.");
     return;
@@ -1315,26 +1315,84 @@ function loadMembers(){
     return [];
   }
 }
+
 async function loadMembersFromBackend() {
     try {
-        const apiBase = (typeof getApiBase === "function") ? getApiBase() : (typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "http://localhost:5000");
-        const response = await fetch(`${apiBase}/api/members`);
+        
+const adminToken = localStorage.getItem("ICMTAdminToken");
 
-        if (!response.ok) {
-            throw new Error(`Failed to load members: ${response.status}`);
-        }
+if (!adminToken) {
+    throw new Error("Admin session token not found. Please sign in again.");
+}
 
-        const result = await response.json();
+const apiBase = (
+    typeof getApiBase === "function"
+        ? getApiBase()
+        : (typeof API_BASE_URL !== "undefined"
+            ? API_BASE_URL
+            : "http://localhost:5000")
+).replace(/\/+$/, "");
 
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid members API response");
-        }
+const response = await fetch(`${apiBase}/api/members`, {
+    method: "GET",
+    headers: {
+        "Authorization": `Bearer ${adminToken}`
+    }
+});
+
+let result;
+try {
+    result = await response.json();
+} catch (e) {
+    throw new Error("The members API returned an invalid response.");
+}
+
+if (!response.ok || !result || result.success === false) {
+    throw new Error(
+        (result && (result.detail || result.message || result.error)) ||
+        `Failed to load members (${response.status})`
+    );
+}
+
+if (!Array.isArray(result.data)) {
+    throw new Error("Invalid members API response.");
+}
+
 
         return result.data.map(member => {
             let photo = member.photo_url || "";
-            if (photo && photo.startsWith("/uploads/")) {
+
+            const memberId = String(member.member_id || "")
+                .trim()
+                .toUpperCase();
+
+            const memberName = String(member.name || "").trim();
+
+            const normalizePhotoName = value =>
+                String(value || "")
+                    .toLowerCase()
+                    .replace(/^(dr|prof|mr|mrs|ms|miss)\.?\s*/i, "")
+                    .replace(/[^a-z0-9]+/g, "");
+
+            if (!photo && window.ICMTA_MEMBER_PHOTO_MAP) {
+                photo = window.ICMTA_MEMBER_PHOTO_MAP[memberId] || "";
+            }
+
+            if (!photo && window.ICMTA_MEMBER_NAME_PHOTO_MAP) {
+                photo =
+                    window.ICMTA_MEMBER_NAME_PHOTO_MAP[
+                        normalizePhotoName(memberName)
+                    ] || "";
+            }
+
+            if (
+                photo &&
+                (photo.startsWith("/uploads/") ||
+                 photo.startsWith("/images/"))
+            ) {
                 photo = `${apiBase}${photo}`;
             }
+
             return {
                 id: member.member_id,
                 name: member.name,
@@ -1348,23 +1406,31 @@ async function loadMembersFromBackend() {
                 country: member.country || "India",
                 expertise: member.expertise || "",
                 photo: photo,
-
-                guideship: member.research_guideship || member.guideship || "",
-                researchSupervisor: member.research_guideship || member.researchSupervisor || "",
-                collegeAddress: member.address || member.collegeAddress || "",
+                guideship:
+                    member.research_guideship || member.guideship || "",
+                researchSupervisor:
+                    member.research_guideship ||
+                    member.researchSupervisor || "",
+                collegeAddress:
+                    member.address || member.collegeAddress || "",
                 mobile: member.mobile || "",
-                professionalEmail: member.professional_email || member.professionalEmail || "",
-                personalEmail: member.personal_email || member.personalEmail || "",
+                professionalEmail:
+                    member.professional_email ||
+                    member.professionalEmail || "",
+                personalEmail:
+                    member.personal_email || member.personalEmail || "",
                 isActive: member.is_active,
                 status: member.my_status
             };
         });
     } catch (error) {
         console.error("Backend member loading failed:", error);
-        return [];
+
+        // Do not silently hide authentication or backend failures as zero members.
+        throw error;
     }
 }
-
+// Load users from localStorage or return default users if not found.
 function loadUsers(){
   try{
     const raw=localStorage.getItem(USER_STORE_KEY);
@@ -1378,6 +1444,7 @@ function loadUsers(){
   ];
 }
 
+// Deduplicate members by ID and normalized key (name|college|designation|state).
 function dedupeMembers(list){
   const byId=new Set();
   const byKey=new Set();
@@ -1415,13 +1482,13 @@ function dedupeMembers(list){
   }
   return result;
 }
-
+// Save members and users to localStorage.
 function persist(){
   members=dedupeMembers(members);
   localStorage.setItem(MEMBER_STORE_KEY,JSON.stringify(members));
   localStorage.setItem(USER_STORE_KEY,JSON.stringify(users));
 }
-
+// Display a temporary toast notification message.
 function toast(message){
   const el=$("toast");
   if(!el) return;
@@ -1432,13 +1499,14 @@ function toast(message){
 }
 const showToast = toast;
 
+// Remove the "Directory" and "Profile" buttons from the admin sidebar.
 function removeAdminSidebarButtons(){
   const dirBtn=document.querySelector('.nav button[data-page="directory"]');
   if(dirBtn) dirBtn.remove();
   const profileBtn=document.querySelector('.nav button[data-page="profile"]');
   if(profileBtn) profileBtn.remove();
 }
-
+// Handle admin login form submission.
 async function login(){
 
   try {
@@ -1483,6 +1551,7 @@ async function login(){
 
 }
 
+// Handle admin logout and clear session data.
 function logout(){
   if($("loginEmail")) $("loginEmail").value = "";
   if($("loginPassword")) $("loginPassword").value = "";
@@ -1490,13 +1559,14 @@ function logout(){
   $("public").classList.add("hidden");
   $("login").classList.remove("hidden");
 }
-
+// Show the public directory view and hide admin login/app.
 function openPublic(){
   $("login").classList.add("hidden");
   $("app").classList.add("hidden");
   $("public").classList.remove("hidden");
 }
 
+//
 function backLogin(){
   $("public").classList.add("hidden");
   $("login").classList.remove("hidden");
@@ -1513,6 +1583,7 @@ const pageTitles={
   "membership-applications":"Membership Applications"
 };
 
+// Show a specific page and update navigation state.
 function showPage(id,button){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   const page=$(id);
@@ -1532,6 +1603,7 @@ function showPage(id,button){
   if(id==="membership-applications" && typeof loadAdminApplications==="function") loadAdminApplications();
 }
 
+// Generate the next available Member ID in the format ICMTA001, ICMTA002, etc.
 function nextId(){
   let max=0;
   for(const m of members){
@@ -1540,7 +1612,7 @@ function nextId(){
   }
   return "ICMTA"+String(max+1).padStart(3,"0");
 }
-
+// Preview a selected photo file in the specified target element.
 function previewPhoto(input,targetId){
   const file=input?.files?.[0];
   if(!file) return;
@@ -1552,7 +1624,7 @@ function previewPhoto(input,targetId){
   };
   reader.readAsDataURL(file);
 }
-
+// Read form data into an object, excluding the "photo" field.
 function readForm(form){
   const data={};
   new FormData(form).forEach((v,k)=>{
@@ -1560,7 +1632,7 @@ function readForm(form){
   });
   return data;
 }
-
+// Check for uniqueness of Member ID, professional email, and mobile number.
 function uniqueCheck(record,excludeId){
   const currentId=String(record.id||"").trim();
   const email=normalize(record.professionalEmail);
@@ -1605,20 +1677,20 @@ function uniqueCheck(record,excludeId){
   return true;
 }
 
-
+// Validate the format and uniqueness of a Member ID.
 function validateMemberId(id,excludeId){
   const value=String(id||"").trim().toUpperCase();
-
+// Check for the correct format: ICMTA followed by at least 3 digits.
   if(!/^ICMTA\d{3,}$/.test(value)){
     alert("Invalid Member ID. Use the format ICMTA001, ICMTA002, ICMTA003...");
     return false;
   }
-
+// Check for duplicates in the existing members list.
   const duplicate=members.some(m=>
     String(m.id||"").trim().toUpperCase()===value
     && String(m.id||"")!==String(excludeId||"")
   );
-
+// Alert the user if a duplicate is found.
   if(duplicate){
     alert("Member ID "+value+" already exists. Please use a unique ID.");
     return false;
@@ -1626,7 +1698,7 @@ function validateMemberId(id,excludeId){
 
   return true;
 }
-
+// Build a member record from form data, merging with existing data if provided.
 function buildRecord(form,existing){
   const data=readForm(form);
   const name=String(data.name||"").trim();
@@ -1638,7 +1710,7 @@ function buildRecord(form,existing){
     photo: existing?.photo || ""
   };
 }
-
+// Reset the member entry form to its default state.
 function resetEntryForm(){
   const form=$("adminForm");
   if(form) form.reset();
@@ -1655,7 +1727,7 @@ function resetEntryForm(){
   }
   editingMemberId=null;
 }
-
+// Handle the submission of the admin member entry form, including validation and backend communication.
 async function handleAdminSubmit(event){
   event.preventDefault();
 
@@ -1668,12 +1740,12 @@ async function handleAdminSubmit(event){
     const existing = existingId
       ? members.find(m => String(m.id) === String(existingId))
       : null;
-
+    
     if(existingId && !existing){
       alert("Member record not found.");
       return;
     }
-
+// Build the member record from form data, merging with existing data if applicable.
     const record = buildRecord(form, existing);
 
     if(!normalize(record.name)){
@@ -1770,7 +1842,7 @@ async function handleAdminSubmit(event){
 
   }
 }
-
+// Populate the state and country filter dropdowns in the directory view.
 function populateDirectoryGlobalFilters(){
   const stateSelect=$("filterState");
   const countrySelect=$("filterCountry");
@@ -1797,7 +1869,7 @@ function populateDirectoryGlobalFilters(){
     if(countries.includes(currentCountry)) countrySelect.value=currentCountry;
   }
 }
-
+// Normalize the expertise field for consistent sorting and display.
 function getNormalizedExpertise(exp){
   if(!exp) return "";
   let list=[];
@@ -1813,7 +1885,7 @@ function getNormalizedExpertise(exp){
   list.sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:"base"}));
   return list.join(", ");
 }
-
+// Render the faculty directory based on search, filters, and sorting options.
 function renderDirectory(){
   // Alphabetical sorting:
   // 1. Remove titles such as Dr., Mr., Ms., Mrs., Prof., Lt. Dr.
@@ -2044,13 +2116,13 @@ function viewProfile(id){
 
   showPage("profile");
 }
-
+// Generate HTML chips for a comma-separated list of values.
 function chips(value){
   return String(value||"").split(",").map(x=>x.trim()).filter(Boolean)
     .map(x=>'<span class="chip">'+esc(x)+'</span>').join("");
 }
 
-
+// Open a dashboard metric panel showing members matching a specific category.
 function openDashboardMetric(type){
   let list=[];
   let title="";
@@ -2123,12 +2195,12 @@ function openDashboardMetric(type){
   panel.style.display="block";
   panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
-
+// Close the dashboard metric panel.
 function closeDashboardMetric(){
   const panel=$("dashboardMetricResults");
   if(panel) panel.style.display="none";
 }
-
+// Update the dashboard metrics based on the current members data.
 function updateDashboard(){
   const total=members.length;
   const pending=members.filter(m=>String(m.status||"").toLowerCase()==="pending"||m.isPending).length;
@@ -2166,7 +2238,7 @@ let showAllStateStats = false;
 let showAllDesStats = false;
 let showAllExpertise = false;
 let showAllGuideship = false;
-
+// Toggle the visibility of state statistics between top 5 and all states.
 function toggleStateStatsView(){
   showAllStateStats = !showAllStateStats;
   const btn = $("stateStatsToggleBtn");
@@ -2175,7 +2247,7 @@ function toggleStateStatsView(){
   if(sub) sub.textContent = showAllStateStats ? "(All States)" : "(Top 5)";
   renderStats("stateStats", countBy("state"), showAllStateStats ? 0 : 5);
 }
-
+// Toggle the visibility of designation statistics between top 5 and all designations.
 function toggleDesStatsView(){
   showAllDesStats = !showAllDesStats;
   const btn = $("desStatsToggleBtn");
@@ -2184,7 +2256,7 @@ function toggleDesStatsView(){
   if(sub) sub.textContent = showAllDesStats ? "(All Designations)" : "(Top 5)";
   renderStats("designationStats", countBy("designation"), showAllDesStats ? 0 : 5);
 }
-
+// Toggle the visibility of expertise statistics between top 5 and all expertise areas.
 function toggleExpertiseView(){
   showAllExpertise = !showAllExpertise;
   const btn = $("expertiseToggleBtn");
@@ -2193,7 +2265,7 @@ function toggleExpertiseView(){
   if(sub) sub.textContent = showAllExpertise ? "(All)" : "(Top 5)";
   renderCommaStats("expertiseStats", countMulti("expertise"), showAllExpertise ? 0 : 5);
 }
-
+// Toggle the visibility of guideship statistics between top 5 and all guideships.
 function toggleGuideshipView(){
   showAllGuideship = !showAllGuideship;
   const btn = $("guideshipToggleBtn");
@@ -2202,7 +2274,7 @@ function toggleGuideshipView(){
   if(sub) sub.textContent = showAllGuideship ? "(All)" : "(Top 5)";
   renderCommaStats("guideshipStats", countMulti("guideship"), showAllGuideship ? 0 : 5);
 }
-
+// Count the occurrences of values for a specific field across all members.
 function countBy(field){
   const counts={};
   if(field==="designation"){
@@ -2231,7 +2303,7 @@ function countBy(field){
   });
   return counts;
 }
-
+//  
 function countMulti(field){
   const counts={};
   members.forEach(m=>{
@@ -2246,7 +2318,7 @@ function countMulti(field){
   });
   return counts;
 }
-
+// Render a bar chart for statistics based on counts, with an optional limit on the number of entries displayed.
 function renderStats(id,counts,limit=5){
   const el=$(id);
   if(!el) return;
@@ -2264,7 +2336,7 @@ function renderStats(id,counts,limit=5){
     return '<div style="font-size:12px;margin-bottom:2px;display:flex;justify-content:space-between;color:var(--text)"><span>'+esc(k)+'</span><b>'+v+'</b></div><div class="bar" style="height:6px;margin:3px 0 9px"><span style="width:'+width+'%"></span></div>';
   }).join("");
 }
-
+// Render a list of chips for statistics based on counts, with an optional limit on the number of entries displayed.
 function renderCommaStats(id,counts,limit=5){
   const el=$(id);
   if(!el) return;
@@ -2280,7 +2352,7 @@ function renderCommaStats(id,counts,limit=5){
     '<span class="chip" style="font-size:11px;padding:3px 8px">'+esc(k)+' <b>· '+v+'</b></span>'
   ).join("")+'</div>';
 }
-
+// Render the list of users in the admin management view, including their roles, status, and access controls.
 function renderUsers(){
   const body=$("userBody");
   if(!body) return;
@@ -2291,19 +2363,19 @@ function renderUsers(){
     +'<td><button class="btn secondary" type="button" onclick="toggleStatus('+i+')">Toggle Status</button></td></tr>'
   ).join("");
 }
-
+// Toggle the access status of a user between "Included" and "Excluded", then persist the change and re-render the user list.
 function toggleAccess(index){
   users[index].access=users[index].access==="Included"?"Excluded":"Included";
   persist();
   renderUsers();
 }
-
+// Toggle the active/inactive status of a user, then persist the change and re-render the user list.
 function toggleStatus(index){
   users[index].status=users[index].status==="Active"?"Inactive":"Active";
   persist();
   renderUsers();
 }
-
+// Reset the entry mode for adding or editing a member, clearing any existing data and resetting the form.
 function resetEntryMode(){
   editingMemberId=null;
   photoData="";
@@ -2316,6 +2388,7 @@ document.addEventListener("click",function(event){
   if(!button) return;
   window.location.href="membership.html";
 });
+// Handle the submission of the public registration form, including validation and saving the new member record.
 function handlePublicSubmit(event){
   event.preventDefault();
   if(saving) return;
@@ -2557,11 +2630,11 @@ document.addEventListener("DOMContentLoaded", function(){
       content: 'Secure fee payment portal for new membership registrations and annual renewals via UPI, Net Banking, NEFT, IMPS, and card payment gateways.'
     }
   ];
-
+  // Utility function to escape special characters in a string for use in a regular expression.
   function escapeRegExp(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
-
+// Highlight occurrences of search terms in the provided text by wrapping them in a styled <mark> element.
   function highlightMatches(text, words) {
     if (!text) return '';
     var safeText = text;
@@ -2572,7 +2645,7 @@ document.addEventListener("DOMContentLoaded", function(){
     });
     return safeText;
   }
-
+// Create a snippet of the content around the first occurrence of any search term, highlighting the matched words.
   function createSnippet(content, words, maxLen) {
     maxLen = maxLen || 140;
     var lower = content.toLowerCase();
@@ -2587,7 +2660,7 @@ document.addEventListener("DOMContentLoaded", function(){
     var snippet = (start > 0 ? '&hellip; ' : '') + content.substring(start, end) + (end < content.length ? ' &hellip;' : '');
     return highlightMatches(snippet, words);
   }
-
+// Score a page based on the presence and frequency of search terms in its title, section, and content.
   function scorePage(page, words) {
     var haystack = (page.title + ' ' + page.section + ' ' + page.content).toLowerCase();
     var score = 0;

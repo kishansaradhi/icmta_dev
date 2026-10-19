@@ -10,6 +10,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <link rel="stylesheet" href="../css/icmta-2026.css">
+
+<!-- Load authentication before the page content is displayed -->
+<script src="../js/auth.js"></script>
+<script>
+  // Redirect visitors who have not signed in.
+  if (!window.ICMTAAuth || !window.ICMTAAuth.require("sign-in.html")) {
+    // The authentication helper handles the redirect.
+  }
+</script>
+
 <!-- <link rel="icon" href="../assets/images/ICMTA-logo.png" type="image/png"> -->
 
 <style>
@@ -251,10 +261,11 @@
         </div>
       </span>
       <span class="icm-navitem">
-        <a href="membership.html" class="nav-item">Membership <i class="icm-caret">&#9662;</i></a>
+        <a href="membership.html" class="nav-item" target="_blank" rel="noopener noreferrer">Membership <i class="icm-caret">&#9662;</i></a>
         <div class="icm-dd">
-          <a href="membership.html">Membership</a>
-          <a href="membership-application.html">Apply for Membership</a>
+          <a href="membership.html#why" target="_blank" rel="noopener noreferrer">Why Join</a>
+          <a href="membership.html#categories" target="_blank" rel="noopener noreferrer">Categories &amp; Fees</a>
+          <a href="membership.html#apply-section" target="_blank" rel="noopener noreferrer">How to Apply</a>
         </div>
       </span>
       <span class="icm-sitesearch" style="position:relative">
@@ -264,6 +275,7 @@
         </form>
         <div id="headerSearchResults" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:min(440px,92vw);max-height:480px;overflow-y:auto;background:#ffffff;border:1px solid #d9e6ed;border-top:3px solid #c49b4b;border-radius:6px;box-shadow:0 14px 35px rgba(19,38,48,0.22);z-index:9999;text-align:left;font-family:inherit;"></div>
       </span>
+      <span class="icm-authslot" data-icm-authslot data-icm-base=""></span>
     </nav>
   </div>
 </header>
@@ -282,6 +294,112 @@
   <!-- 1. Featured / Upcoming Events -->
   <div class="section-block" id="upcoming">
     <h2>Upcoming Events 2026</h2>
+
+    <!-- Event: Communication & Etiquettes (Basic Level) Workshop for Students -->
+    <div class="event-featured-card" id="communication-etiquettes-workshop-2026" data-event-start="2026-10-16T14:00:00+05:30" data-event-end="2026-10-16T16:00:00+05:30">
+      <div class="event-featured-grid">
+        
+        <!-- Left: Official Event Poster -->
+        <div class="event-poster-wrap">
+          <img src="../assets/images/events/communication-etiquettes-workshop.jpg" alt="Workshop for Students on Communication &amp; Etiquettes (Basic Level)" class="event-poster-img">
+        </div>
+
+        <!-- Right: Event Details -->
+        <div class="event-details-wrap">
+          <span class="event-badge">Workshop for Students &bull; 16 October 2026</span>
+          <h3 class="event-title">“Communication &amp; Etiquettes (Basic Level)”</h3>
+
+          <div class="event-meta-grid">
+            <div class="event-meta-item">
+              <span class="meta-label">Date</span>
+              <span class="meta-val">16th October 2026 (Friday)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Time</span>
+              <span class="meta-val">2:00 PM – 4:00 PM (IST)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Platform / Mode</span>
+              <span class="meta-val">Online (Zoom Platform)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Registration Fee</span>
+              <span class="meta-val" style="color:#15803d;font-weight:700">Zero Registration Fees (Free)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Resource Person</span>
+              <span class="meta-val">Brahma Mahesh K (Consultant, HCLTech, Chennai)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Organized by</span>
+              <span class="meta-val">Indian Commerce and Management Teachers Association (ICMTA)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">In Association with</span>
+              <span class="meta-val">Shri Gnanambica Degree College Autonomous, Madanapalli, Andhra Pradesh</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">ICMTA Program Coordinator</span>
+              <span class="meta-val">Dr. Gundupagi Manjunath (Principal, BRIMS, Adoni)</span>
+            </div>
+            <div class="event-meta-item">
+              <span class="meta-label">Program Convenor</span>
+              <span class="meta-val">B. Rajeswari (Asst. Prof., Dept. of Commerce, Shri Gnanambica Degree College)</span>
+            </div>
+            <div class="event-meta-item" style="grid-column: 1 / -1;">
+              <span class="meta-label">Resource Person Profile</span>
+              <span class="meta-val">IT Professional &middot; Business Leader &middot; Career Readiness Mentor &middot; Consultant, HCLTech, Chennai</span>
+            </div>
+          </div>
+
+          <div class="event-desc-block">
+            <p>
+              The <strong>Indian Commerce and Management Teachers Association (ICMTA)</strong>, in association with <strong>Shri Gnanambica Degree College Autonomous, Madanapalli, Andhra Pradesh</strong>, is organizing an online Workshop for Students on <strong>“Communication &amp; Etiquettes (Basic Level)”</strong>.
+            </p>
+            <p>
+              This workshop aims to equip students with crucial interpersonal skills, corporate etiquette, and effective communication habits to foster academic growth and career readiness.
+            </p>
+          </div>
+
+          <!-- Highlights & Contact Info -->
+          <div class="event-sub-tables">
+            <div class="event-info-panel">
+              <h4>Workshop Highlights</h4>
+              <ul class="event-info-list">
+                <li><span>Expert Session:</span> <b>Learn from 25+ years experienced professional</b></li>
+                <li><span>Target Audience:</span> <b>Students &amp; Young Learners</b></li>
+                <li><span>Certificate:</span> <b>E-Certificate will be provided</b></li>
+                <li><span>Platform:</span> <b>Online (Zoom Platform)</b></li>
+                <li><span>Registration Fee:</span> <b style="color:#15803d">Free Online Registration</b></li>
+              </ul>
+            </div>
+
+            <div class="event-info-panel">
+              <h4>Leadership &amp; Registration</h4>
+              <ul class="event-info-list">
+                <li><span>Online Registration:</span> <b><a href="https://forms.gle/iR1wNZo2NrkKTy7Y6" target="_blank" rel="noopener noreferrer" style="color:var(--navy);text-decoration:underline">Google Form Link</a></b></li>
+                <li><span>Resource Person:</span> <b>Brahma Mahesh K (Consultant, HCLTech)</b></li>
+                <li><span>Program Coordinator:</span> <b>Dr. Gundupagi Manjunath</b></li>
+                <li><span>Program Convenor:</span> <b>B. Rajeswari</b></li>
+                <li><span>Official Website:</span> <b>www.icmta.in</b></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="event-actions">
+            <a href="https://forms.gle/iR1wNZo2NrkKTy7Y6" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn">
+              Register via Google Form &rarr;
+            </a>
+            <a href="../assets/images/events/communication-etiquettes-workshop.jpg" target="_blank" class="btn secondary btn-lg" rel="noopener noreferrer">
+              View Official Poster
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
 
     <!-- Event: Climate Change and the Future of Humanity Online Panel Discussion -->
     <div class="event-featured-card" id="climate-change-panel-2026" data-event-start="2026-09-26T19:00:00+05:30" data-event-end="2026-09-26T21:00:00+05:30">
@@ -373,7 +491,7 @@
 
           <!-- Action Buttons -->
           <div class="event-actions">
-            <a href="https://forms.gle/vN64pcBqCwS1hJka8" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg">
+            <a href="https://forms.gle/vN64pcBqCwS1hJka8" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn">
               Register via Google Form &rarr;
             </a>
             <a href="../assets/images/events/climate-change-panel-discussion.jpg" target="_blank" class="btn secondary btn-lg" rel="noopener noreferrer">
@@ -469,7 +587,7 @@
 
           <!-- Action Buttons -->
           <div class="event-actions">
-            <a href="https://forms.gle/WBQ9562Xsmmpvc9a6" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg"
+            <a href="https://forms.gle/WBQ9562Xsmmpvc9a6" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn"
                target="_blank"
                rel="noopener noreferrer">
               Register via Google Form &rarr;
@@ -563,9 +681,8 @@
 
           <!-- Action Buttons -->
           <div class="event-actions">
-            <a href="https://forms.gle/uR6vQc3xicUf2gmy7" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg"
-               target="_blank"
-               rel="noopener noreferrer"> 
+            <a href="https://forms.gle/uR6vQc3xicUf2gmy7" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn"
+               > 
               Register Now &rarr;
             </a>
             <a href="../assets/images/events/voice-modulation-webinar.jpg" target="_blank" class="btn secondary btn-lg" rel="noopener noreferrer">
@@ -663,7 +780,7 @@
 
           <!-- Action Buttons -->
           <div class="event-actions">
-            <a href="https://forms.gle/j9kPkBaCLPKZRR2x9" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg"
+            <a href="https://forms.gle/j9kPkBaCLPKZRR2x9" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn"
                 target="_blank"
                 rel="noopener noreferrer">
               Register Now &rarr;
@@ -748,9 +865,8 @@
 
           <!-- Action Buttons -->
           <div class="event-actions">
-            <a href="https://forms.gle/GYHurRpFLav73Hip8" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg"
-                target="_blank"
-                rel="noopener noreferrer">
+            <a href="https://forms.gle/GYHurRpFLav73Hip8" class="btn primary btn-lg event-register-btn">
+                
               Register Now &rarr;
             </a>
             <a href="../assets/documents/National_Seminar_Siddhartha_Academy_2026.pdf" target="_blank" class="btn secondary btn-lg" rel="noopener noreferrer">
@@ -864,7 +980,7 @@
       <h4>Quick links</h4>
       <a href="public-directory.html" target="_blank" rel="noopener noreferrer">Member Directory</a>
       <a href="events.html" target="_blank" rel="noopener noreferrer">Events</a>
-      <a href="membership-application.html">Become a Member</a>
+      <a href="membership.html#apply-section" target="_blank" rel="noopener noreferrer">Become a Member</a>
       <a href="resources.html" target="_blank" rel="noopener noreferrer">ICMTA Resources</a>
       <a href="contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
     </div>
@@ -895,7 +1011,8 @@
     <span>Disclaimer: The information provided on the ICMTA website is intended for general academic and informational purposes and may be updated or modified from time to time. ICMTA makes reasonable efforts to ensure accuracy but does not guarantee that all information is complete, current, or free from errors, and shall not be responsible for reliance placed on such information.</span>
   </div>
 </footer>
- 
+
+
 <script src="../js/eventDataService.js"></script>
 
 <script>
@@ -958,9 +1075,11 @@
     var displayDate = fmtDisplayDate(ev.startDate, ev.endDate);
     var displayTime = ev.startTime ? fmtDisplayTime(ev.startTime) + (ev.endTime ? ' – ' + fmtDisplayTime(ev.endTime) : '') : '—';
 
-    var regBtn = ev.registrationLink
-      ? '<a href="' + ev.registrationLink + '" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg">Register Now &rarr;</a>'
-      : '';
+   var regBtn = ev.registrationLink
+  var regBtn = ev.registrationLink
+  var regBtn = ev.registrationLink
+  ? '<a href="' + ev.registrationLink + '" target="_blank" rel="noopener noreferrer" class="btn primary btn-lg event-register-btn">Register Now →</a>'
+  : '';
 
     card.innerHTML =
       '<div class="event-featured-grid">' +
@@ -995,19 +1114,20 @@
   }
 
   /* Inject all approved dynamic events */
-  function injectApprovedEvents() {
+  async function injectApprovedEvents() {
     var upcomingSection = document.getElementById('upcoming');
     var pastSection     = document.getElementById('past');
     if (!upcomingSection || !pastSection) return;
 
     var approvedEvents;
-    try {
-      approvedEvents = (typeof EventDataService !== 'undefined')
-        ? EventDataService.getEvents()
-        : [];
-    } catch (e) {
-      approvedEvents = [];
-    }
+try {
+  approvedEvents = (typeof EventDataService !== 'undefined')
+    ? await EventDataService.getEvents()
+    : [];
+} catch (e) {
+  console.error("Failed to load events from backend:", e);
+  approvedEvents = [];
+}
 
     if (approvedEvents.length === 0) return;
 
@@ -1059,13 +1179,29 @@ if (placeholder) placeholder.style.display = 'none';
       if (isNaN(endTime)) return;
 
       if (now >= endTime) {
-        // Hide the "no archived events" placeholder if present
-        var placeholder = document.getElementById('noPastEvents');
-if (placeholder) placeholder.style.display = 'none';
 
-        // Move card to the end of the Past Events section
-        pastSection.appendChild(card);
-      }
+    // Disable registration
+    var registerBtn = card.querySelector('.event-register-btn');
+
+    if (registerBtn) {
+        registerBtn.removeAttribute('href');
+        registerBtn.removeAttribute('target');
+        registerBtn.removeAttribute('rel');
+        registerBtn.textContent = 'Registration Closed';
+        registerBtn.classList.remove('primary');
+        registerBtn.classList.add('secondary');
+        registerBtn.style.pointerEvents = 'none';
+        registerBtn.style.cursor = 'default';
+        registerBtn.setAttribute('aria-disabled', 'true');
+    }
+
+    // Hide the "no archived events" placeholder if present
+    var placeholder = document.getElementById('noPastEvents');
+    if (placeholder) placeholder.style.display = 'none';
+
+    // Move card to the end of the Past Events section
+    pastSection.appendChild(card);
+}
     });
   }
 
@@ -1076,6 +1212,7 @@ if (placeholder) placeholder.style.display = 'none';
   setInterval(checkEventStatuses, 60000);
 })();
 </script>
+<script src="../js/member-photo-map.js"></script>
 <script src="../js/app.js"></script>
 <script>
 document.addEventListener('click', function(e) {

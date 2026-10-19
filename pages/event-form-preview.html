@@ -624,15 +624,15 @@
                     <div class="form-group full-width">
 
                         <label for="registrationLink">
-                            Registration Link
-                        </label>
+    Registration Google Form URL
+</label>
 
-                        <input
-                            type="url"
-                            id="registrationLink"
-                            name="registrationLink"
-                            placeholder="https://example.com/register"
-                        >
+<input
+    type="url"
+    id="registrationLink"
+    name="registrationLink"
+    placeholder="https://forms.gle/your-form-link"
+>
 
                     </div>
 
@@ -753,10 +753,9 @@
 
 </div>
 
-
+<script src="../js/auth.js"></script>
 <script src="../js/eventDataService.js"></script>
 
-<script>
 
     /* ==============================
        POSTER PREVIEW
@@ -816,7 +815,7 @@
        PUBLISH — submit for approval
     ============================== */
 
-    document.getElementById('eventForm').addEventListener('submit', function (e) {
+    document.getElementById('eventForm').addEventListener('submit', async function (e) {
         e.preventDefault();
 
         var form = this;
@@ -847,20 +846,29 @@
             coordinatorName:     form.coordinatorName.value.trim(),
             contactNumber:       form.coordinatorPhone.value.trim(),
             contactEmail:        form.coordinatorEmail.value.trim(),
-            poster:              ''   /* file upload: URL stored after backend integration */
+           posterFile: form.eventPoster.files[0] || null
         };
 
         /* Hand off to the data service — this is the only call to localStorage (indirectly) */
-        var saved = EventDataService.submitEvent(eventData);
+        var saved = await EventDataService.submitEvent(eventData);
 
         console.info('[ICMTA] Event submitted:', saved.id, '| Status:', saved.status);
 
         /* Reset form and show confirmation */
         form.reset();
-        posterPreview.style.display = 'none';
-        showSuccessBanner(
-            'Application submitted successfully.\nYour event is awaiting admin approval.'
-        );
+
+if (posterPreview) {
+    posterPreview.style.display = 'none';
+}
+
+showSuccessBanner(
+    'Application submitted successfully.\nYour event is awaiting admin approval.'
+);
+
+window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+});
     });
 
 </script>

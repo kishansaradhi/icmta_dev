@@ -1,6 +1,27 @@
+# Secrets
+.env
+backend/.env
+
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Runtime uploads
+uploads/*
+!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+*.log
+console.log
+stderr.log
+
+# OS / editor
 .vscode/
 .DS_Store
 Thumbs.db
+desktop.ini
+Desktop.ini
 __pycache__/
 *.pyc
-backend/uploads/

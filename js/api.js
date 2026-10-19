@@ -1,55 +1,70 @@
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "";
+
 
 async function loadMembersFromBackend() {
-    try {
-        const apiBase = getApiBase();
-        const response = await fetch(`${apiBase}/api/members`);
+  try {
+    const apiBase = getApiBase();
+    const result = await window.ICMTAAuth.api("/api/members");
 
-        if (!response.ok) {
-            throw new Error(`Failed to load members: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid members API response");
-        }
-
-        return result.data.map(member => {
-            let photo = member.photo_url || "";
-            if (photo && photo.startsWith("/uploads/")) {
-                photo = `${apiBase}${photo}`;
-            }
-            return {
-                id: member.member_id,
-                name: member.name,
-                academicTitle: member.academic_title || "",
-                qualification: member.qualification || "",
-                designation: member.designation || "",
-                department: member.department || "",
-                college: member.institution || "",
-                city: member.city || "",
-                state: member.state_province || "",
-                country: member.country || "India",
-                expertise: member.expertise || "",
-                photo: photo,
-
-                guideship: member.research_guideship || member.guideship || "",
-                researchSupervisor: member.research_guideship || member.researchSupervisor || "",
-                collegeAddress: member.address || member.collegeAddress || "",
-                mobile: member.mobile || "",
-                professionalEmail: member.professional_email || "",
-                personalEmail: member.personal_email || "",
-                isActive: member.is_active,
-                status: member.my_status
-            };
-        });
-
-    } catch (error) {
-        console.error("Backend member loading failed:", error);
-        return [];
+    if (!result || !result.success || !Array.isArray(result.data)) {
+      throw new Error("Invalid members API response");
     }
+
+    return result.data.map(member => {
+      let photo = member.photo_url || "";
+      const memberId = String(member.member_id || "").trim().toUpperCase();
+      const memberName = String(member.name || "").trim();
+
+      const normalizePhotoName = value => String(value || "")
+        .toLowerCase()
+        .replace(/^(dr|prof|mr|mrs|ms|miss)\.?\s*/i, "")
+        .replace(/[^a-z0-9]+/g, "");
+
+      if (!photo && window.ICMTA_MEMBER_PHOTO_MAP) {
+        photo = window.ICMTA_MEMBER_PHOTO_MAP[memberId] || "";
+      }
+
+      if (!photo && window.ICMTA_MEMBER_NAME_PHOTO_MAP) {
+        photo =
+          window.ICMTA_MEMBER_NAME_PHOTO_MAP[
+            normalizePhotoName(memberName)
+          ] || "";
+      }
+
+      if (photo && (photo.startsWith("/uploads/") || photo.startsWith("/images/"))) {
+        photo = `${apiBase}${photo}`;
+      }
+
+      return {
+        id: member.member_id,
+        name: member.name,
+        academicTitle: member.academic_title || "",
+        qualification: member.qualification || "",
+        designation: member.designation || "",
+        department: member.department || "",
+        college: member.institution || "",
+        city: member.city || "",
+        state: member.state_province || "",
+        country: member.country || "India",
+        expertise: member.expertise || "",
+        photo,
+        guideship: member.research_guideship || member.guideship || "",
+        researchSupervisor:
+          member.research_guideship || member.researchSupervisor || "",
+        collegeAddress: member.address || member.collegeAddress || "",
+        mobile: member.mobile || "",
+        professionalEmail: member.professional_email || "",
+        personalEmail: member.personal_email || "",
+        isActive: member.is_active,
+        status: member.my_status
+      };
+    });
+  } catch (error) {
+    console.error("Backend member loading failed:", error);
+    throw error;
+  }
 }
+
 
 async function getMemberProfile(memberId) {
     const apiBase = getApiBase();
@@ -57,14 +72,29 @@ async function getMemberProfile(memberId) {
     if (!cleanId) {
         throw new Error("Member ID is required.");
     }
-    const response = await fetch(`${apiBase}/api/members/${encodeURIComponent(cleanId)}`);
-    const result = await response.json();
+    // The backend checks active membership before returning a full profile.
+const result = await window.ICMTAAuth.api(
+    `/api/members/${encodeURIComponent(cleanId)}`
+);
     if (!response.ok || !result.success) {
         throw new Error(result.detail || "Member profile not available or member is inactive.");
     }
     const m = result.data;
     let photo = m.photo_url || "";
-    if (photo && photo.startsWith("/uploads/")) {
+    const profileId = String(m.member_id || "").trim().toUpperCase();
+    const profileName = String(m.name || "").trim();
+    const normalizePhotoName = (value) => String(value || "")
+        .toLowerCase()
+        .replace(/^(dr|prof|mr|mrs|ms|miss)\.?\s*/i, "")
+        .replace(/[^a-z0-9]+/g, "");
+
+    if (!photo && window.ICMTA_MEMBER_PHOTO_MAP) {
+        photo = window.ICMTA_MEMBER_PHOTO_MAP[profileId] || "";
+    }
+    if (!photo && window.ICMTA_MEMBER_NAME_PHOTO_MAP) {
+        photo = window.ICMTA_MEMBER_NAME_PHOTO_MAP[normalizePhotoName(profileName)] || "";
+    }
+    if (photo && (photo.startsWith("/uploads/") || photo.startsWith("/images/"))) {
         photo = `${apiBase}${photo}`;
     }
     return {
@@ -97,7 +127,7 @@ async function getMemberProfile(memberId) {
     };
 }
 async function adminLogin(user_id, password) {
-    const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+    const response = await fetch(`${getApiBase()}/api/admin/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -338,4 +368,4 @@ async function rejectAdminApplication(applicationId, reason) {
     const result = await res.json();
     if (!res.ok || !result.success) throw new Error(result.detail || "Failed to reject application");
     return result.data;
-}
+}

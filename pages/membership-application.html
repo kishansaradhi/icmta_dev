@@ -1145,7 +1145,7 @@ async function handleMembershipSubmit(e) {
         ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
         : ''
     );
-    const apiUrl = `${apiBase}/api/membership-applications`;
+    const apiUrl = `${apiBase}/api/public/membership-applications`;
 
     const response = await fetch(
       apiUrl,
@@ -1158,7 +1158,7 @@ async function handleMembershipSubmit(e) {
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      let errorMsg = 'Unable to submit membership application.';
+      let errorMsg = `Unable to submit membership application (HTTP ${response.status}).`;
       if (typeof result.detail === 'string') {
         errorMsg = result.detail;
       } else if (Array.isArray(result.detail)) {
@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script src="../js/member-photo-map.js"></script>
 <script src="../js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+ICMTA NODE MIGRATION
+
+1. Open backend.
+2. Copy .env.example -> .env.
+3. Fill Hostinger/MySQL credentials.
+4. Set a strong JWT_SECRET.
+5. Run: npm install
+6. Run: npm start
+7. Open: http://localhost:5000/api/health
+8. When healthy, point the frontend API_BASE_URL to the Node API.
+9. For Hostinger, create the Node.js application and set the same environment variables.
+10. Upload the backend source (do not upload node_modules if Hostinger installs dependencies).
